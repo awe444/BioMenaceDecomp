@@ -92,6 +92,11 @@ static inline void movedata(unsigned srcseg, unsigned srcoff,
 #define O_TEXT 0
 #endif
 
+/* Borland file permission constants */
+#ifndef S_IREAD
+#define S_IREAD S_IRUSR
+#endif
+
 /* Borland filelength() */
 static inline long filelength(int fd)
 {
