@@ -39,7 +39,7 @@ updated
 */
 
 #include "ID_HEADS.H"
-#pragma hdrstop
+
 
 /*
 =============================================================================
@@ -473,7 +473,7 @@ void RF_MarkTileGraphics (void)
           if (!tinf[ANIM+tile])
           {
             strcpy (str,"RF_MarkTileGraphics: Background anim of 0:");
-            itoa (tile,str2,10);
+            sprintf(str2, "%d", tile);
             strcat (str,str2);
             Quit (str);
           }
@@ -505,7 +505,7 @@ void RF_MarkTileGraphics (void)
           if (++anims > 20)
           {
             strcpy (str,"RF_MarkTileGraphics: Unending background animation:");
-            itoa (next,str2,10);
+            sprintf(str2, "%d", next);
             strcat (str,str2);
             Quit (str);
           }
@@ -538,7 +538,7 @@ nextback:
           if (!tinf[MANIM+tile])
           {
             strcpy (str,"RF_MarkTileGraphics: Foreground anim of 0:");
-            itoa (tile,str2,10);
+            sprintf(str2, "%d", tile);
             strcat (str,str2);
             Quit (str);
           }
@@ -571,7 +571,7 @@ nextback:
           if (++anims > 20)
           {
             strcpy (str,"RF_MarkTileGraphics: Unending foreground animation:");
-            itoa (next,str2,10);
+            sprintf(str2, "%d", next);
             strcat (str,str2);
             Quit (str);
           }
@@ -1452,7 +1452,7 @@ void RF_CalcTics (void)
 
 #ifdef PROFILE
       strcpy (scratch,"\tTics:");
-      itoa (tics,str,10);
+      sprintf(str, "%d", tics);
       strcat (scratch,str);
       strcat (scratch,"\n");
       write (profilehandle,scratch,strlen(scratch));
@@ -1793,7 +1793,7 @@ linknewspot:
   if (!block)
   {
     strcpy (str,"RF_PlaceSprite: Placed an uncached sprite:");
-    itoa (spritenumber,str2,10);
+    sprintf(str2, "%d", spritenumber);
     strcat (str,str2);
     Quit (str);
   }
@@ -1987,7 +1987,7 @@ next:
   eraselistptr[otherpage] = otherpage ? &eraselist[1][0] : &eraselist[0][0];
 #ifdef PROFILE
   strcpy (scratch,"\tErase:");
-  itoa (erasecount,str,10);
+  sprintf(str, "%d", erasecount);
   strcat (scratch,str);
   write (profilehandle,scratch,strlen(scratch));
 #endif
@@ -2124,7 +2124,7 @@ redraw:
   }
 #ifdef PROFILE
   strcpy (scratch,"\tSprites:");
-  itoa (updatecount,str,10);
+  sprintf(str, "%d", updatecount);
   strcat (scratch,str);
   write (profilehandle,scratch,strlen(scratch));
 #endif
@@ -2190,13 +2190,8 @@ void RF_Refresh (void)
 // with an UPDATETERMINATE at the end
 //
   updatestart[otherpage] = newupdate = baseupdatestart[otherpage];
-asm mov ax,ds
-asm mov es,ax
-asm xor ax,ax
-asm mov cx,(UPDATESCREENSIZE-2)/2
-asm mov di,[newupdate]
-asm rep stosw
-asm mov [WORD PTR es:di],UPDATETERMINATE
+  memset(newupdate, 0, UPDATESCREENSIZE-2);
+  *(unsigned *)(newupdate + UPDATESCREENSIZE - 2) = UPDATETERMINATE;
 
   screenpage ^= 1;
   otherpage ^= 1;
@@ -2464,7 +2459,7 @@ linknewspot:
   if (!block)
   {
     strcpy (str,"RF_PlaceSprite: Placed an uncached sprite!");
-    itoa (spritenumber,str2,10);
+    sprintf(str2, "%d", spritenumber);
     strcat (str,str2);
     Quit (str);
   }

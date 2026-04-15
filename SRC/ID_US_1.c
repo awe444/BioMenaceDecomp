@@ -52,10 +52,8 @@
 
 #include "ID_HEADS.H"
 
-#pragma hdrstop
-
-#pragma warn    -pia
-
+extern int _argc;
+extern char **_argv;
 
 //      Special imports
 extern  boolean         showscorebox;
@@ -108,8 +106,6 @@ static  boolean         US_Started;
 //                      from DOS.
 //
 ///////////////////////////////////////////////////////////////////////////
-#pragma warn    -par
-#pragma warn    -rch
 int
 USL_HardError(word errval,int ax,int bp,int si)
 {
@@ -141,7 +137,7 @@ static  WindowRec       wr;
     s = buf;
   }
 
-  c = peekb(0x40,0x49);   // Get the current screen mode
+  c = 0;   // Get the current screen mode (stubbed for SDL)
   if ((c < 4) || (c == 7))
     goto oh_kill_me;
 
@@ -153,8 +149,6 @@ static  WindowRec       wr;
   US_CPrint("(R)etry or (A)bort?");
   VW_UpdateScreen();
   IN_ClearKeysDown();
-
-asm     sti     // Let the keyboard interrupts come through
 
   while (true)
   {
@@ -189,8 +183,6 @@ oh_kill_me:
 #undef  RETRY
 #undef  ABORT
 }
-#pragma warn    +par
-#pragma warn    +rch
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -367,7 +359,7 @@ US_Startup(void)
   if (US_Started)
     return;
 
-  harderr(USL_HardError); // Install the fatal error handler
+  // harderr(USL_HardError); // Install the fatal error handler (not needed for SDL)
 
   US_InitRndT(true);              // Initialize the random number generator
 
@@ -541,7 +533,7 @@ US_TextScreen(void)
 
   USL_ClearTextScreen();
 
-  _fmemcpy(MK_FP(0xb800,0),7 + &introscn,80 * 25 * 2);
+  memcpy(MK_FP(0xb800,0),7 + &introscn,80 * 25 * 2);
 
   // Check for TED launching here
   for (i = 1;i < _argc;i++)
@@ -602,7 +594,8 @@ USL_ShowMem(word x,word y,long mem)
   char    buf[16];
   word    i;
 
-  for (i = strlen(ltoa(mem,buf,10));i < 5;i++)
+  sprintf(buf, "%ld", mem);
+  for (i = strlen(buf);i < 5;i++)
     USL_ScreenDraw(x++,y," ",0xff);
   USL_ScreenDraw(x,y,buf,0xff);
 }
@@ -779,7 +772,8 @@ US_PrintUnsigned(longword n)
 {
   char    buffer[32];
 
-  US_Print(ultoa(n,buffer,10));
+  sprintf(buffer, "%lu", (unsigned long)n);
+  US_Print(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -792,7 +786,8 @@ US_PrintSigned(long n)
 {
   char    buffer[32];
 
-  US_Print(ltoa(n,buffer,10));
+  sprintf(buffer, "%ld", n);
+  US_Print(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -866,7 +861,7 @@ US_CPrint(char far *fs)
   char    c, *se, *s;
   char    buf[199];
 
-  _fstrcpy(buf, fs);
+  strcpy(buf, fs);
   s = buf;
 
   while (*s)
@@ -1157,15 +1152,10 @@ US_LineInput(int x,int y,char *buf,char *def,boolean escok,
     if (cursorvis)
       USL_XORICursor(x,y,s,cursor);
 
-  asm     pushf
-  asm     cli
-
     sc = LastScan;
     LastScan = sc_None;
     c = LastASCII;
     LastASCII = key_None;
-
-  asm     popf
 
     switch (sc)
     {

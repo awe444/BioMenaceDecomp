@@ -31,9 +31,12 @@
 //
 
 #include "ID_HEADS.H"
-#pragma hdrstop
 
-#pragma warn    -pia
+#ifndef EINVFMT
+#define EINVFMT -1
+#endif
+
+extern void StartMusic(unsigned short num);
 
 #define CTLPANELMUSIC    16
 
@@ -658,7 +661,7 @@ USL_HandleError(int num)
   else if (num == EINVFMT)
     strcat(buf,"File is Incomplete");
   else
-    strcat(buf,sys_errlist[num]);
+    strcat(buf,strerror(num));
 
   VW_HideCursor();
 
@@ -696,7 +699,6 @@ USL_SetOptionsText(void)
   optionsi[2].text = helpmessages? "HELP MESSAGES (ON)" : "HELP MESSAGES (OFF)";
 }
 
-#pragma argsused
 static boolean
 USL_ScoreCustom(UserCall call,UserItem far *item)
 {
@@ -710,7 +712,6 @@ USL_ScoreCustom(UserCall call,UserItem far *item)
   return(true);
 }
 
-#pragma argsused
 static boolean
 USL_HelpCustom(UserCall call,UserItem far *item)
 {
@@ -724,7 +725,6 @@ USL_HelpCustom(UserCall call,UserItem far *item)
   return(true);
 }
 
-#pragma argsused
 static boolean
 USL_CompCustom(UserCall call,UserItem far *item)
 {
@@ -798,11 +798,8 @@ USL_CKSetKey(UserItem far *item,word i)
       LastScan = sc_Escape;
     }
 
-  asm     pushf
-  asm     cli
     if (LastScan == sc_LShift)
       LastScan = sc_None;
-  asm     popf
   } while (!(scan = LastScan));
 
   if (scan != sc_Escape)
@@ -825,7 +822,6 @@ USL_CKSetKey(UserItem far *item,word i)
   IN_ClearKeysDown();
 }
 
-#pragma argsused
 static boolean
 USL_KeySCustom(UserCall call,UserItem far *item)
 {
@@ -836,7 +832,6 @@ USL_KeySCustom(UserCall call,UserItem far *item)
   return(false);
 }
 
-#pragma argsused
 static boolean
 USL_KeyCustom(UserCall call,UserItem far *item)
 {
@@ -959,7 +954,6 @@ USL_ConfigJoystick(word joy)
   return(true);
 }
 
-#pragma argsused
 static boolean
 USL_Joy1Custom(UserCall call,UserItem far *item)
 {
@@ -976,7 +970,6 @@ USL_Joy1Custom(UserCall call,UserItem far *item)
     return(false);
 }
 
-#pragma argsused
 static boolean
 USL_Joy2Custom(UserCall call,UserItem far *item)
 {
