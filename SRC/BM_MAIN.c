@@ -44,7 +44,7 @@
 */
 
 boolean tedlevel;
-Uint16 tedlevelnum;
+word tedlevelnum;
 
 char str[80], str2[20];
 boolean storedemo;

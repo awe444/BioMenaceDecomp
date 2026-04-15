@@ -31,6 +31,9 @@
 #include "ID_HEADS.H"
 #include <SDL.h>
 
+extern int _argc;
+extern char **_argv;
+
 /*
 =============================================================================
 

@@ -119,6 +119,22 @@ static inline void _setcursortype(int type) { (void)type; }
 
 /* textmode/textcolor/gotoxy stubs */
 #define C80 3
+#define BLACK       0
+#define BLUE        1
+#define GREEN       2
+#define CYAN        3
+#define RED         4
+#define MAGENTA     5
+#define BROWN       6
+#define LIGHTGRAY   7
+#define DARKGRAY    8
+#define LIGHTBLUE   9
+#define LIGHTGREEN  10
+#define LIGHTCYAN   11
+#define LIGHTRED    12
+#define LIGHTMAGENTA 13
+#define YELLOW      14
+#define WHITE       15
 static inline void textmode(int mode) { (void)mode; }
 static inline void textcolor(int color) { (void)color; }
 static inline void gotoxy(int x, int y) { (void)x; (void)y; }
@@ -156,10 +172,58 @@ static unsigned short _SI, _DI, _ES, _DS;
 #define execlp(a,b,...) ((void)0)
 
 /* ========================================================================
+ * Borland global argc/argv
+ * ======================================================================== */
+extern int _argc;
+extern char **_argv;
+
+/* ========================================================================
  * Borland-specific ALLOC.H equivalents
  * ======================================================================== */
 
 /* Nothing needed - malloc/free from stdlib.h suffice */
+
+/* ========================================================================
+ * Borland far-model memory/string functions — just use standard versions
+ * ======================================================================== */
+#define _fmemcpy  memcpy
+#define _fmemset  memset
+#define _fstrcpy  strcpy
+#define _fstrlen  strlen
+
+/* ========================================================================
+ * Borland itoa/ltoa/ultoa — use sprintf
+ * ======================================================================== */
+static inline char *itoa(int val, char *buf, int radix) {
+    (void)radix;
+    sprintf(buf, "%d", val);
+    return buf;
+}
+static inline char *ltoa(long val, char *buf, int radix) {
+    (void)radix;
+    sprintf(buf, "%ld", val);
+    return buf;
+}
+static inline char *ultoa(unsigned long val, char *buf, int radix) {
+    (void)radix;
+    sprintf(buf, "%lu", val);
+    return buf;
+}
+
+/* ========================================================================
+ * Borland peek/poke — BIOS data area access, stubbed
+ * ======================================================================== */
+static inline unsigned peek(unsigned seg, unsigned ofs) {
+    (void)seg; (void)ofs; return 0;
+}
+static inline unsigned char peekb(unsigned seg, unsigned ofs) {
+    (void)seg; (void)ofs; return 0;
+}
+#define poke(s,o,v)  ((void)0)
+#define pokeb(s,o,v) ((void)0)
+
+/* harderr — DOS critical error handler, stubbed */
+#define harderr(h) ((void)0)
 
 /* ========================================================================
  * Borland inline asm - replaced with macros that do nothing
