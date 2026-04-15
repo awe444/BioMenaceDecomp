@@ -1376,7 +1376,7 @@ static void ShiftMPropChar(unsigned ch, fontstruct *font)
 
             databuffer[row * BUFFWIDTH + dibuf] &= ~lo;
             if (dibuf + 1 < BUFFWIDTH)
-                databuffer[row * BUFFWIDTH + dibuf + 1] = ~hi;
+                databuffer[row * BUFFWIDTH + dibuf + 1] &= ~hi;
             dibuf++;
         }
         chardata += srcbytes;
