@@ -123,7 +123,7 @@ typedef struct animtilestruct
 {
   unsigned  x,y,tile;
   tiletype  *chain;
-  unsigned  far *mapplane;
+  uint16_t  far *mapplane;
   struct animtilestruct **prevptr,*nexttile;
 } animtiletype;
 
@@ -443,7 +443,7 @@ void RF_MarkTileGraphics (void)
 {
   unsigned  size;
   int     tile,next,anims,change;
-  unsigned  far *start,far *end,far *info;
+  uint16_t  far *start,far *end,far *info;
   unsigned  i,tilehigh;
   char    str[80],str2[16];
 
@@ -625,7 +625,7 @@ void RFL_InitAnimList (void)
 void RFL_CheckForAnimTile (unsigned x, unsigned y)
 {
   unsigned  tile,offset,speed,lasttime,thistime,timemissed;
-  unsigned  far *map;
+  uint16_t  far *map;
   animtiletype  *anim,*next;
 
 // the info plane of each animating tile has a near pointer into allanims[]
@@ -1155,8 +1155,8 @@ void RF_MapToMap (unsigned srcx, unsigned srcy,
   int     x,y;
   unsigned  source,destofs,xspot,yspot;
   unsigned  linedelta,p0,p1,p2,updatespot;
-  unsigned  far *source0, far *source1, far *source2;
-  unsigned  far *dest0, far *dest1, far *dest2;
+  uint16_t  far *source0, far *source1, far *source2;
+  uint16_t  far *dest0, far *dest1, far *dest2;
   boolean   changed;
 
   RFL_RemoveAnimsInBlock (destx,desty,width,height);
@@ -1227,14 +1227,15 @@ void RF_MapToMap (unsigned srcx, unsigned srcy,
 =====================
 */
 
-void RF_MemToMap (unsigned far *source, unsigned plane,
+void RF_MemToMap (uint16_t far *source, unsigned plane,
           unsigned destx, unsigned desty,
           unsigned width, unsigned height)
 {
   int     x,y;
   unsigned  xspot,yspot;
   unsigned  linedelta,updatespot;
-  unsigned  far *dest,old,new;
+  uint16_t  far *dest;
+  unsigned  old,new;
   boolean   changed;
 
   RFL_RemoveAnimsInBlock (destx,desty,width,height);

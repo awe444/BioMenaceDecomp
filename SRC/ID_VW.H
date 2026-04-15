@@ -174,7 +174,7 @@ typedef enum {NOcard,MDAcard,CGAcard,EGAcard,MCGAcard,VGAcard,
 
 typedef struct
 {
-  int width,
+  int16_t width,
   height,
   orgx,orgy,
   xl,yl,xh,yh,
@@ -183,22 +183,22 @@ typedef struct
 
 typedef struct
 {
-  unsigned  sourceoffset[MAXSHIFTS];
-  unsigned  planesize[MAXSHIFTS];
-  unsigned  width[MAXSHIFTS];
+  uint16_t  sourceoffset[MAXSHIFTS];
+  uint16_t  planesize[MAXSHIFTS];
+  uint16_t  width[MAXSHIFTS];
   byte    data[];
 } spritetype;   // the memptr for each sprite points to this
 
 typedef struct
 {
-  int width,height;
+  int16_t width,height;
 } pictabletype;
 
 
 typedef struct
 {
-  int height;
-  int location[256];
+  int16_t height;
+  int16_t location[256];
   char width[256];
 } fontstruct;
 

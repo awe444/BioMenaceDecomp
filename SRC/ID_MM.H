@@ -35,7 +35,7 @@
 
 typedef struct
 {
-  long  nearheap,farheap,EMSmem,XMSmem,mainmem;
+  int32_t nearheap,farheap,EMSmem,XMSmem,mainmem;
 } mminfotype;
 
 //==========================================================================
