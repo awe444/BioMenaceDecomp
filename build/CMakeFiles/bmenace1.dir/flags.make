@@ -6,5 +6,5 @@ C_DEFINES = -DSDL_PORT=1
 
 C_INCLUDES = -I/home/runner/work/BioMenaceDecomp/BioMenaceDecomp/SRC -I/usr/include/SDL2
 
-C_FLAGS = -Wno-error -g -std=gnu11 -Wno-multichar -Wno-pointer-sign -D_REENTRANT
+C_FLAGS = -std=gnu11 -Wno-multichar -Wno-pointer-sign -D_REENTRANT
 

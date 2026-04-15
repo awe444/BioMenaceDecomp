@@ -1,1 +1,1 @@
-/usr/bin/cc -Wno-error -g -Wl,--dependency-file=CMakeFiles/bmenace1.dir/link.d CMakeFiles/bmenace1.dir/SRC/opl.c.o -o bmenace1  -lSDL2 -lm
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/bmenace1.dir/link.d CMakeFiles/bmenace1.dir/SRC/opl.c.o -o bmenace1  -lSDL2 -lm

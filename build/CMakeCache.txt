@@ -31,7 +31,7 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=Debug
+CMAKE_BUILD_TYPE:STRING=
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -48,7 +48,7 @@ CMAKE_C_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-13
 CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-13
 
 //Flags used by the C compiler during all build types.
-CMAKE_C_FLAGS:STRING=-Wno-error
+CMAKE_C_FLAGS:STRING=
 
 //Flags used by the C compiler during DEBUG builds.
 CMAKE_C_FLAGS_DEBUG:STRING=-g
