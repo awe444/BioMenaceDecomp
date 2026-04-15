@@ -192,6 +192,7 @@ void InitGame(void)
 //
 // reclaim the memory from the linked in text screen
 //
+#ifndef SDL_PORT
   segstart = FP_SEG(&introscn);
   seglength = 4000/16;
   if (FP_OFF(&introscn))
@@ -200,6 +201,7 @@ void InitGame(void)
     seglength--;
   }
   MML_UseSpace (segstart,seglength);
+#endif
 
   VW_SetScreenMode(GRMODE);
   VW_ColorBorder(BLACK);
@@ -296,11 +298,15 @@ void CheckMemory(void)
   finscreen = (Uint16)grsegs[OUTOFMEM];
   ShutdownId();
 
+#ifdef SDL_PORT
+  fprintf(stderr, "Not enough memory to run Bio Menace!\n");
+#else
   movedata(finscreen,7,0xb800,0,3780);
   textmode(C80);
   textcolor(WHITE);
   textbackground(BLACK);
   gotoxy(1,24);
+#endif
 
   exit(1);
 }

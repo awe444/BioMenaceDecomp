@@ -20,6 +20,7 @@ set(ENGINE_SOURCES
     SRC/ID_VW.c
     SRC/ID_RF_A.c
     SRC/ID_US_A.c
+    SRC/ID_TEXTSCR.c
     SRC/opl.c
 )
 

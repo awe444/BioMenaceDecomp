@@ -1,4 +1,14 @@
-static const unsigned char introscn_data[] = {
+/* In DOS, 'introscn' was a label in a .OBJ file containing the intro screen
+ * data (7-byte header + 4000 bytes of char/attr pairs + 1-byte EOF marker).
+ * The extern declaration in ID_HEADS.H is 'extern char introscn' (single char),
+ * but code uses '&introscn + 7' to access the data past the header.
+ *
+ * For the SDL port we define introscn as the full 4008-byte array.
+ * Other translation units see 'extern char introscn' and take '&introscn'
+ * which the linker resolves to the start of this array — so '&introscn + 7'
+ * correctly points 7 bytes in.
+ */
+char introscn[] = {
   0xfd, 0x00, 0xb8, 0x00, 0x00, 0xa0, 0x0f, 0x20, 0x07, 0x20, 0x07, 0x20,
   0x07, 0x20, 0x07, 0x20, 0x07, 0x20, 0x07, 0x20, 0x07, 0x20, 0x07, 0x20,
   0x07, 0x20, 0x07, 0x20, 0x07, 0xc9, 0x19, 0xcd, 0x19, 0xcd, 0x19, 0xcd,
@@ -334,17 +344,11 @@ static const unsigned char introscn_data[] = {
   0x09, 0x20, 0x09, 0x20, 0x09, 0x20, 0x09, 0x20, 0x09, 0x20, 0x09, 0x20,
   0x09, 0x20, 0x09, 0x20, 0x09, 0x20, 0x09, 0x20, 0x09, 0x20, 0x09, 0x1a
 };
-unsigned int introscn_data_len = 4008;
-
-/* The original code references 'introscn' as an extern char.
- * In DOS, this was linked from a .OBJ file containing the intro screen data.
- * For the SDL port, we provide the data as a C array.
- */
-char introscn __attribute__((aligned(1)));
+unsigned int introscn_data_len = sizeof(introscn);
 
 const unsigned char *GetIntroScreenData(void)
 {
-    return introscn_data;
+    return (const unsigned char *)introscn;
 }
 
 unsigned int GetIntroScreenSize(void)

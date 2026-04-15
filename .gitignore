@@ -4,3 +4,4 @@
 !SRC/DATA/*.OBJ
 !SRC/LZEXE/LZEXE.EXE
 build/
+build-debug/

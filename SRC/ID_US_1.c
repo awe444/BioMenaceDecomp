@@ -51,6 +51,9 @@
 //
 
 #include "ID_HEADS.H"
+#ifdef SDL_PORT
+#include "ID_TEXTSCR.h"
+#endif
 
 extern int _argc;
 extern char **_argv;
@@ -481,7 +484,11 @@ USL_ScreenDraw(word x,word y,char *s,byte attr)
 {
   byte    far *screen,far *oscreen;
 
+#ifdef SDL_PORT
+  screen = TXT_GetBuffer() + (x * 2) + (y * 80 * 2);
+#else
   screen = MK_FP(0xb800,(x * 2) + (y * 80 * 2));
+#endif
   oscreen = (&introscn + 7) + ((x - 1) * 2) + (y * 80 * 2) + 1;
   while (*s)
   {
@@ -494,6 +501,9 @@ USL_ScreenDraw(word x,word y,char *s,byte attr)
     else
       screen++;
   }
+#ifdef SDL_PORT
+  TXT_Update();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -533,7 +543,12 @@ US_TextScreen(void)
 
   USL_ClearTextScreen();
 
+#ifdef SDL_PORT
+  memcpy(TXT_GetBuffer(),7 + &introscn,80 * 25 * 2);
+  TXT_Update();
+#else
   memcpy(MK_FP(0xb800,0),7 + &introscn,80 * 25 * 2);
+#endif
 
   // Check for TED launching here
   for (i = 1;i < _argc;i++)
@@ -569,7 +584,11 @@ USL_Show(word x,word y,word w,boolean show,boolean hilight)
 {
   byte    far *screen,far *oscreen;
 
+#ifdef SDL_PORT
+  screen = TXT_GetBuffer() + ((x - 1) * 2) + (y * 80 * 2);
+#else
   screen = MK_FP(0xb800,((x - 1) * 2) + (y * 80 * 2));
+#endif
   oscreen = (&introscn + 7) + ((x - 1) * 2) + (y * 80 * 2) - 1;
   *screen++ = show? 251 : ' ';    // Checkmark char or space
 //      *screen = 0x48;
@@ -642,7 +661,11 @@ US_UpdateTextScreen(void)
     x = 21;
     y = 16;
     w = 14;
+#ifdef SDL_PORT
+    screen = TXT_GetBuffer() + (x * 2) + (y * 80 * 2) - 1;
+#else
     screen = MK_FP(0xb800,(x * 2) + (y * 80 * 2) - 1);
+#endif
     oscreen = (&introscn + 7) + (x * 2) + (y * 80 * 2) - 1;
     oscreen += 2;
     for (w++;w--;screen += 2,oscreen += 2)
@@ -706,6 +729,9 @@ static  byte    colors[] = {4,6,13,15,15,15,15,15,15};
   IN_ClearKeysDown();
 
   USL_ClearTextScreen();
+#ifdef SDL_PORT
+  TXT_Shutdown();
+#endif
 }
 
 //      Window/Printing routines
