@@ -15,11 +15,15 @@
 #define ID_COMPAT_H
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+/* Do NOT include <stdbool.h> - the game defines its own boolean type
+ * as: typedef enum {false,true} boolean;
+ * C11's stdbool.h would conflict with the false/true identifiers.
+ */
 
 /* ========================================================================
  * DOS Memory Model Keywords - expand to nothing on modern compilers

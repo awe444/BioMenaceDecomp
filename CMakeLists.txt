@@ -10,34 +10,34 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 
 # Source files
 set(ENGINE_SOURCES
-    SRC/ID_CA.C
-    SRC/ID_IN.C
-    SRC/ID_MM.C
-    SRC/ID_RF.C
-    SRC/ID_SD.C
-    SRC/ID_US_1.C
-    SRC/ID_US_2.C
-    SRC/ID_VW.C
-    SRC/ID_RF_A.C
-    SRC/ID_US_A.C
+    SRC/ID_CA.c
+    SRC/ID_IN.c
+    SRC/ID_MM.c
+    SRC/ID_RF.c
+    SRC/ID_SD.c
+    SRC/ID_US_1.c
+    SRC/ID_US_2.c
+    SRC/ID_VW.c
+    SRC/ID_RF_A.c
+    SRC/ID_US_A.c
     SRC/opl.c
 )
 
 set(GAME_SOURCES
-    SRC/BM_MAIN.C
-    SRC/BM_TEXT.C
-    SRC/BM_DEMO.C
-    SRC/BM_GAME1.C
-    SRC/BM_GAME2.C
-    SRC/BM_GAME3.C
-    SRC/BM_STATE.C
-    SRC/BM_PLAY1.C
-    SRC/BM_PLAY2.C
-    SRC/BM_SPEC.C
-    SRC/BM_ACT1.C
-    SRC/BM_ACT2.C
-    SRC/BM_ACT3.C
-    SRC/BM1INTRO.C
+    SRC/BM_MAIN.c
+    SRC/BM_TEXT.c
+    SRC/BM_DEMO.c
+    SRC/BM_GAME1.c
+    SRC/BM_GAME2.c
+    SRC/BM_GAME3.c
+    SRC/BM_STATE.c
+    SRC/BM_PLAY1.c
+    SRC/BM_PLAY2.c
+    SRC/BM_SPEC.c
+    SRC/BM_ACT1.c
+    SRC/BM_ACT2.c
+    SRC/BM_ACT3.c
+    SRC/BM1INTRO.c
 )
 
 add_executable(bmenace1 ${ENGINE_SOURCES} ${GAME_SOURCES})

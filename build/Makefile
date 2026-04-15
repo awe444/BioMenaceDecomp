@@ -174,6 +174,582 @@ bmenace1/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/build
 .PHONY : bmenace1/fast
 
+SRC/BM1INTRO.o: SRC/BM1INTRO.c.o
+.PHONY : SRC/BM1INTRO.o
+
+# target to build an object file
+SRC/BM1INTRO.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM1INTRO.c.o
+.PHONY : SRC/BM1INTRO.c.o
+
+SRC/BM1INTRO.i: SRC/BM1INTRO.c.i
+.PHONY : SRC/BM1INTRO.i
+
+# target to preprocess a source file
+SRC/BM1INTRO.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM1INTRO.c.i
+.PHONY : SRC/BM1INTRO.c.i
+
+SRC/BM1INTRO.s: SRC/BM1INTRO.c.s
+.PHONY : SRC/BM1INTRO.s
+
+# target to generate assembly for a file
+SRC/BM1INTRO.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM1INTRO.c.s
+.PHONY : SRC/BM1INTRO.c.s
+
+SRC/BM_ACT1.o: SRC/BM_ACT1.c.o
+.PHONY : SRC/BM_ACT1.o
+
+# target to build an object file
+SRC/BM_ACT1.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT1.c.o
+.PHONY : SRC/BM_ACT1.c.o
+
+SRC/BM_ACT1.i: SRC/BM_ACT1.c.i
+.PHONY : SRC/BM_ACT1.i
+
+# target to preprocess a source file
+SRC/BM_ACT1.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT1.c.i
+.PHONY : SRC/BM_ACT1.c.i
+
+SRC/BM_ACT1.s: SRC/BM_ACT1.c.s
+.PHONY : SRC/BM_ACT1.s
+
+# target to generate assembly for a file
+SRC/BM_ACT1.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT1.c.s
+.PHONY : SRC/BM_ACT1.c.s
+
+SRC/BM_ACT2.o: SRC/BM_ACT2.c.o
+.PHONY : SRC/BM_ACT2.o
+
+# target to build an object file
+SRC/BM_ACT2.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT2.c.o
+.PHONY : SRC/BM_ACT2.c.o
+
+SRC/BM_ACT2.i: SRC/BM_ACT2.c.i
+.PHONY : SRC/BM_ACT2.i
+
+# target to preprocess a source file
+SRC/BM_ACT2.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT2.c.i
+.PHONY : SRC/BM_ACT2.c.i
+
+SRC/BM_ACT2.s: SRC/BM_ACT2.c.s
+.PHONY : SRC/BM_ACT2.s
+
+# target to generate assembly for a file
+SRC/BM_ACT2.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT2.c.s
+.PHONY : SRC/BM_ACT2.c.s
+
+SRC/BM_ACT3.o: SRC/BM_ACT3.c.o
+.PHONY : SRC/BM_ACT3.o
+
+# target to build an object file
+SRC/BM_ACT3.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT3.c.o
+.PHONY : SRC/BM_ACT3.c.o
+
+SRC/BM_ACT3.i: SRC/BM_ACT3.c.i
+.PHONY : SRC/BM_ACT3.i
+
+# target to preprocess a source file
+SRC/BM_ACT3.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT3.c.i
+.PHONY : SRC/BM_ACT3.c.i
+
+SRC/BM_ACT3.s: SRC/BM_ACT3.c.s
+.PHONY : SRC/BM_ACT3.s
+
+# target to generate assembly for a file
+SRC/BM_ACT3.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_ACT3.c.s
+.PHONY : SRC/BM_ACT3.c.s
+
+SRC/BM_DEMO.o: SRC/BM_DEMO.c.o
+.PHONY : SRC/BM_DEMO.o
+
+# target to build an object file
+SRC/BM_DEMO.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_DEMO.c.o
+.PHONY : SRC/BM_DEMO.c.o
+
+SRC/BM_DEMO.i: SRC/BM_DEMO.c.i
+.PHONY : SRC/BM_DEMO.i
+
+# target to preprocess a source file
+SRC/BM_DEMO.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_DEMO.c.i
+.PHONY : SRC/BM_DEMO.c.i
+
+SRC/BM_DEMO.s: SRC/BM_DEMO.c.s
+.PHONY : SRC/BM_DEMO.s
+
+# target to generate assembly for a file
+SRC/BM_DEMO.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_DEMO.c.s
+.PHONY : SRC/BM_DEMO.c.s
+
+SRC/BM_GAME1.o: SRC/BM_GAME1.c.o
+.PHONY : SRC/BM_GAME1.o
+
+# target to build an object file
+SRC/BM_GAME1.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME1.c.o
+.PHONY : SRC/BM_GAME1.c.o
+
+SRC/BM_GAME1.i: SRC/BM_GAME1.c.i
+.PHONY : SRC/BM_GAME1.i
+
+# target to preprocess a source file
+SRC/BM_GAME1.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME1.c.i
+.PHONY : SRC/BM_GAME1.c.i
+
+SRC/BM_GAME1.s: SRC/BM_GAME1.c.s
+.PHONY : SRC/BM_GAME1.s
+
+# target to generate assembly for a file
+SRC/BM_GAME1.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME1.c.s
+.PHONY : SRC/BM_GAME1.c.s
+
+SRC/BM_GAME2.o: SRC/BM_GAME2.c.o
+.PHONY : SRC/BM_GAME2.o
+
+# target to build an object file
+SRC/BM_GAME2.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME2.c.o
+.PHONY : SRC/BM_GAME2.c.o
+
+SRC/BM_GAME2.i: SRC/BM_GAME2.c.i
+.PHONY : SRC/BM_GAME2.i
+
+# target to preprocess a source file
+SRC/BM_GAME2.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME2.c.i
+.PHONY : SRC/BM_GAME2.c.i
+
+SRC/BM_GAME2.s: SRC/BM_GAME2.c.s
+.PHONY : SRC/BM_GAME2.s
+
+# target to generate assembly for a file
+SRC/BM_GAME2.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME2.c.s
+.PHONY : SRC/BM_GAME2.c.s
+
+SRC/BM_GAME3.o: SRC/BM_GAME3.c.o
+.PHONY : SRC/BM_GAME3.o
+
+# target to build an object file
+SRC/BM_GAME3.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME3.c.o
+.PHONY : SRC/BM_GAME3.c.o
+
+SRC/BM_GAME3.i: SRC/BM_GAME3.c.i
+.PHONY : SRC/BM_GAME3.i
+
+# target to preprocess a source file
+SRC/BM_GAME3.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME3.c.i
+.PHONY : SRC/BM_GAME3.c.i
+
+SRC/BM_GAME3.s: SRC/BM_GAME3.c.s
+.PHONY : SRC/BM_GAME3.s
+
+# target to generate assembly for a file
+SRC/BM_GAME3.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_GAME3.c.s
+.PHONY : SRC/BM_GAME3.c.s
+
+SRC/BM_MAIN.o: SRC/BM_MAIN.c.o
+.PHONY : SRC/BM_MAIN.o
+
+# target to build an object file
+SRC/BM_MAIN.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_MAIN.c.o
+.PHONY : SRC/BM_MAIN.c.o
+
+SRC/BM_MAIN.i: SRC/BM_MAIN.c.i
+.PHONY : SRC/BM_MAIN.i
+
+# target to preprocess a source file
+SRC/BM_MAIN.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_MAIN.c.i
+.PHONY : SRC/BM_MAIN.c.i
+
+SRC/BM_MAIN.s: SRC/BM_MAIN.c.s
+.PHONY : SRC/BM_MAIN.s
+
+# target to generate assembly for a file
+SRC/BM_MAIN.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_MAIN.c.s
+.PHONY : SRC/BM_MAIN.c.s
+
+SRC/BM_PLAY1.o: SRC/BM_PLAY1.c.o
+.PHONY : SRC/BM_PLAY1.o
+
+# target to build an object file
+SRC/BM_PLAY1.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_PLAY1.c.o
+.PHONY : SRC/BM_PLAY1.c.o
+
+SRC/BM_PLAY1.i: SRC/BM_PLAY1.c.i
+.PHONY : SRC/BM_PLAY1.i
+
+# target to preprocess a source file
+SRC/BM_PLAY1.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_PLAY1.c.i
+.PHONY : SRC/BM_PLAY1.c.i
+
+SRC/BM_PLAY1.s: SRC/BM_PLAY1.c.s
+.PHONY : SRC/BM_PLAY1.s
+
+# target to generate assembly for a file
+SRC/BM_PLAY1.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_PLAY1.c.s
+.PHONY : SRC/BM_PLAY1.c.s
+
+SRC/BM_PLAY2.o: SRC/BM_PLAY2.c.o
+.PHONY : SRC/BM_PLAY2.o
+
+# target to build an object file
+SRC/BM_PLAY2.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_PLAY2.c.o
+.PHONY : SRC/BM_PLAY2.c.o
+
+SRC/BM_PLAY2.i: SRC/BM_PLAY2.c.i
+.PHONY : SRC/BM_PLAY2.i
+
+# target to preprocess a source file
+SRC/BM_PLAY2.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_PLAY2.c.i
+.PHONY : SRC/BM_PLAY2.c.i
+
+SRC/BM_PLAY2.s: SRC/BM_PLAY2.c.s
+.PHONY : SRC/BM_PLAY2.s
+
+# target to generate assembly for a file
+SRC/BM_PLAY2.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_PLAY2.c.s
+.PHONY : SRC/BM_PLAY2.c.s
+
+SRC/BM_SPEC.o: SRC/BM_SPEC.c.o
+.PHONY : SRC/BM_SPEC.o
+
+# target to build an object file
+SRC/BM_SPEC.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_SPEC.c.o
+.PHONY : SRC/BM_SPEC.c.o
+
+SRC/BM_SPEC.i: SRC/BM_SPEC.c.i
+.PHONY : SRC/BM_SPEC.i
+
+# target to preprocess a source file
+SRC/BM_SPEC.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_SPEC.c.i
+.PHONY : SRC/BM_SPEC.c.i
+
+SRC/BM_SPEC.s: SRC/BM_SPEC.c.s
+.PHONY : SRC/BM_SPEC.s
+
+# target to generate assembly for a file
+SRC/BM_SPEC.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_SPEC.c.s
+.PHONY : SRC/BM_SPEC.c.s
+
+SRC/BM_STATE.o: SRC/BM_STATE.c.o
+.PHONY : SRC/BM_STATE.o
+
+# target to build an object file
+SRC/BM_STATE.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_STATE.c.o
+.PHONY : SRC/BM_STATE.c.o
+
+SRC/BM_STATE.i: SRC/BM_STATE.c.i
+.PHONY : SRC/BM_STATE.i
+
+# target to preprocess a source file
+SRC/BM_STATE.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_STATE.c.i
+.PHONY : SRC/BM_STATE.c.i
+
+SRC/BM_STATE.s: SRC/BM_STATE.c.s
+.PHONY : SRC/BM_STATE.s
+
+# target to generate assembly for a file
+SRC/BM_STATE.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_STATE.c.s
+.PHONY : SRC/BM_STATE.c.s
+
+SRC/BM_TEXT.o: SRC/BM_TEXT.c.o
+.PHONY : SRC/BM_TEXT.o
+
+# target to build an object file
+SRC/BM_TEXT.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_TEXT.c.o
+.PHONY : SRC/BM_TEXT.c.o
+
+SRC/BM_TEXT.i: SRC/BM_TEXT.c.i
+.PHONY : SRC/BM_TEXT.i
+
+# target to preprocess a source file
+SRC/BM_TEXT.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_TEXT.c.i
+.PHONY : SRC/BM_TEXT.c.i
+
+SRC/BM_TEXT.s: SRC/BM_TEXT.c.s
+.PHONY : SRC/BM_TEXT.s
+
+# target to generate assembly for a file
+SRC/BM_TEXT.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/BM_TEXT.c.s
+.PHONY : SRC/BM_TEXT.c.s
+
+SRC/ID_CA.o: SRC/ID_CA.c.o
+.PHONY : SRC/ID_CA.o
+
+# target to build an object file
+SRC/ID_CA.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_CA.c.o
+.PHONY : SRC/ID_CA.c.o
+
+SRC/ID_CA.i: SRC/ID_CA.c.i
+.PHONY : SRC/ID_CA.i
+
+# target to preprocess a source file
+SRC/ID_CA.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_CA.c.i
+.PHONY : SRC/ID_CA.c.i
+
+SRC/ID_CA.s: SRC/ID_CA.c.s
+.PHONY : SRC/ID_CA.s
+
+# target to generate assembly for a file
+SRC/ID_CA.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_CA.c.s
+.PHONY : SRC/ID_CA.c.s
+
+SRC/ID_IN.o: SRC/ID_IN.c.o
+.PHONY : SRC/ID_IN.o
+
+# target to build an object file
+SRC/ID_IN.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_IN.c.o
+.PHONY : SRC/ID_IN.c.o
+
+SRC/ID_IN.i: SRC/ID_IN.c.i
+.PHONY : SRC/ID_IN.i
+
+# target to preprocess a source file
+SRC/ID_IN.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_IN.c.i
+.PHONY : SRC/ID_IN.c.i
+
+SRC/ID_IN.s: SRC/ID_IN.c.s
+.PHONY : SRC/ID_IN.s
+
+# target to generate assembly for a file
+SRC/ID_IN.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_IN.c.s
+.PHONY : SRC/ID_IN.c.s
+
+SRC/ID_MM.o: SRC/ID_MM.c.o
+.PHONY : SRC/ID_MM.o
+
+# target to build an object file
+SRC/ID_MM.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_MM.c.o
+.PHONY : SRC/ID_MM.c.o
+
+SRC/ID_MM.i: SRC/ID_MM.c.i
+.PHONY : SRC/ID_MM.i
+
+# target to preprocess a source file
+SRC/ID_MM.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_MM.c.i
+.PHONY : SRC/ID_MM.c.i
+
+SRC/ID_MM.s: SRC/ID_MM.c.s
+.PHONY : SRC/ID_MM.s
+
+# target to generate assembly for a file
+SRC/ID_MM.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_MM.c.s
+.PHONY : SRC/ID_MM.c.s
+
+SRC/ID_RF.o: SRC/ID_RF.c.o
+.PHONY : SRC/ID_RF.o
+
+# target to build an object file
+SRC/ID_RF.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_RF.c.o
+.PHONY : SRC/ID_RF.c.o
+
+SRC/ID_RF.i: SRC/ID_RF.c.i
+.PHONY : SRC/ID_RF.i
+
+# target to preprocess a source file
+SRC/ID_RF.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_RF.c.i
+.PHONY : SRC/ID_RF.c.i
+
+SRC/ID_RF.s: SRC/ID_RF.c.s
+.PHONY : SRC/ID_RF.s
+
+# target to generate assembly for a file
+SRC/ID_RF.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_RF.c.s
+.PHONY : SRC/ID_RF.c.s
+
+SRC/ID_RF_A.o: SRC/ID_RF_A.c.o
+.PHONY : SRC/ID_RF_A.o
+
+# target to build an object file
+SRC/ID_RF_A.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_RF_A.c.o
+.PHONY : SRC/ID_RF_A.c.o
+
+SRC/ID_RF_A.i: SRC/ID_RF_A.c.i
+.PHONY : SRC/ID_RF_A.i
+
+# target to preprocess a source file
+SRC/ID_RF_A.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_RF_A.c.i
+.PHONY : SRC/ID_RF_A.c.i
+
+SRC/ID_RF_A.s: SRC/ID_RF_A.c.s
+.PHONY : SRC/ID_RF_A.s
+
+# target to generate assembly for a file
+SRC/ID_RF_A.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_RF_A.c.s
+.PHONY : SRC/ID_RF_A.c.s
+
+SRC/ID_SD.o: SRC/ID_SD.c.o
+.PHONY : SRC/ID_SD.o
+
+# target to build an object file
+SRC/ID_SD.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_SD.c.o
+.PHONY : SRC/ID_SD.c.o
+
+SRC/ID_SD.i: SRC/ID_SD.c.i
+.PHONY : SRC/ID_SD.i
+
+# target to preprocess a source file
+SRC/ID_SD.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_SD.c.i
+.PHONY : SRC/ID_SD.c.i
+
+SRC/ID_SD.s: SRC/ID_SD.c.s
+.PHONY : SRC/ID_SD.s
+
+# target to generate assembly for a file
+SRC/ID_SD.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_SD.c.s
+.PHONY : SRC/ID_SD.c.s
+
+SRC/ID_US_1.o: SRC/ID_US_1.c.o
+.PHONY : SRC/ID_US_1.o
+
+# target to build an object file
+SRC/ID_US_1.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_1.c.o
+.PHONY : SRC/ID_US_1.c.o
+
+SRC/ID_US_1.i: SRC/ID_US_1.c.i
+.PHONY : SRC/ID_US_1.i
+
+# target to preprocess a source file
+SRC/ID_US_1.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_1.c.i
+.PHONY : SRC/ID_US_1.c.i
+
+SRC/ID_US_1.s: SRC/ID_US_1.c.s
+.PHONY : SRC/ID_US_1.s
+
+# target to generate assembly for a file
+SRC/ID_US_1.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_1.c.s
+.PHONY : SRC/ID_US_1.c.s
+
+SRC/ID_US_2.o: SRC/ID_US_2.c.o
+.PHONY : SRC/ID_US_2.o
+
+# target to build an object file
+SRC/ID_US_2.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_2.c.o
+.PHONY : SRC/ID_US_2.c.o
+
+SRC/ID_US_2.i: SRC/ID_US_2.c.i
+.PHONY : SRC/ID_US_2.i
+
+# target to preprocess a source file
+SRC/ID_US_2.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_2.c.i
+.PHONY : SRC/ID_US_2.c.i
+
+SRC/ID_US_2.s: SRC/ID_US_2.c.s
+.PHONY : SRC/ID_US_2.s
+
+# target to generate assembly for a file
+SRC/ID_US_2.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_2.c.s
+.PHONY : SRC/ID_US_2.c.s
+
+SRC/ID_US_A.o: SRC/ID_US_A.c.o
+.PHONY : SRC/ID_US_A.o
+
+# target to build an object file
+SRC/ID_US_A.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_A.c.o
+.PHONY : SRC/ID_US_A.c.o
+
+SRC/ID_US_A.i: SRC/ID_US_A.c.i
+.PHONY : SRC/ID_US_A.i
+
+# target to preprocess a source file
+SRC/ID_US_A.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_A.c.i
+.PHONY : SRC/ID_US_A.c.i
+
+SRC/ID_US_A.s: SRC/ID_US_A.c.s
+.PHONY : SRC/ID_US_A.s
+
+# target to generate assembly for a file
+SRC/ID_US_A.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_US_A.c.s
+.PHONY : SRC/ID_US_A.c.s
+
+SRC/ID_VW.o: SRC/ID_VW.c.o
+.PHONY : SRC/ID_VW.o
+
+# target to build an object file
+SRC/ID_VW.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_VW.c.o
+.PHONY : SRC/ID_VW.c.o
+
+SRC/ID_VW.i: SRC/ID_VW.c.i
+.PHONY : SRC/ID_VW.i
+
+# target to preprocess a source file
+SRC/ID_VW.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_VW.c.i
+.PHONY : SRC/ID_VW.c.i
+
+SRC/ID_VW.s: SRC/ID_VW.c.s
+.PHONY : SRC/ID_VW.s
+
+# target to generate assembly for a file
+SRC/ID_VW.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bmenace1.dir/build.make CMakeFiles/bmenace1.dir/SRC/ID_VW.c.s
+.PHONY : SRC/ID_VW.c.s
+
 SRC/opl.o: SRC/opl.c.o
 .PHONY : SRC/opl.o
 
@@ -211,6 +787,78 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... bmenace1"
+	@echo "... SRC/BM1INTRO.o"
+	@echo "... SRC/BM1INTRO.i"
+	@echo "... SRC/BM1INTRO.s"
+	@echo "... SRC/BM_ACT1.o"
+	@echo "... SRC/BM_ACT1.i"
+	@echo "... SRC/BM_ACT1.s"
+	@echo "... SRC/BM_ACT2.o"
+	@echo "... SRC/BM_ACT2.i"
+	@echo "... SRC/BM_ACT2.s"
+	@echo "... SRC/BM_ACT3.o"
+	@echo "... SRC/BM_ACT3.i"
+	@echo "... SRC/BM_ACT3.s"
+	@echo "... SRC/BM_DEMO.o"
+	@echo "... SRC/BM_DEMO.i"
+	@echo "... SRC/BM_DEMO.s"
+	@echo "... SRC/BM_GAME1.o"
+	@echo "... SRC/BM_GAME1.i"
+	@echo "... SRC/BM_GAME1.s"
+	@echo "... SRC/BM_GAME2.o"
+	@echo "... SRC/BM_GAME2.i"
+	@echo "... SRC/BM_GAME2.s"
+	@echo "... SRC/BM_GAME3.o"
+	@echo "... SRC/BM_GAME3.i"
+	@echo "... SRC/BM_GAME3.s"
+	@echo "... SRC/BM_MAIN.o"
+	@echo "... SRC/BM_MAIN.i"
+	@echo "... SRC/BM_MAIN.s"
+	@echo "... SRC/BM_PLAY1.o"
+	@echo "... SRC/BM_PLAY1.i"
+	@echo "... SRC/BM_PLAY1.s"
+	@echo "... SRC/BM_PLAY2.o"
+	@echo "... SRC/BM_PLAY2.i"
+	@echo "... SRC/BM_PLAY2.s"
+	@echo "... SRC/BM_SPEC.o"
+	@echo "... SRC/BM_SPEC.i"
+	@echo "... SRC/BM_SPEC.s"
+	@echo "... SRC/BM_STATE.o"
+	@echo "... SRC/BM_STATE.i"
+	@echo "... SRC/BM_STATE.s"
+	@echo "... SRC/BM_TEXT.o"
+	@echo "... SRC/BM_TEXT.i"
+	@echo "... SRC/BM_TEXT.s"
+	@echo "... SRC/ID_CA.o"
+	@echo "... SRC/ID_CA.i"
+	@echo "... SRC/ID_CA.s"
+	@echo "... SRC/ID_IN.o"
+	@echo "... SRC/ID_IN.i"
+	@echo "... SRC/ID_IN.s"
+	@echo "... SRC/ID_MM.o"
+	@echo "... SRC/ID_MM.i"
+	@echo "... SRC/ID_MM.s"
+	@echo "... SRC/ID_RF.o"
+	@echo "... SRC/ID_RF.i"
+	@echo "... SRC/ID_RF.s"
+	@echo "... SRC/ID_RF_A.o"
+	@echo "... SRC/ID_RF_A.i"
+	@echo "... SRC/ID_RF_A.s"
+	@echo "... SRC/ID_SD.o"
+	@echo "... SRC/ID_SD.i"
+	@echo "... SRC/ID_SD.s"
+	@echo "... SRC/ID_US_1.o"
+	@echo "... SRC/ID_US_1.i"
+	@echo "... SRC/ID_US_1.s"
+	@echo "... SRC/ID_US_2.o"
+	@echo "... SRC/ID_US_2.i"
+	@echo "... SRC/ID_US_2.s"
+	@echo "... SRC/ID_US_A.o"
+	@echo "... SRC/ID_US_A.i"
+	@echo "... SRC/ID_US_A.s"
+	@echo "... SRC/ID_VW.o"
+	@echo "... SRC/ID_VW.i"
+	@echo "... SRC/ID_VW.s"
 	@echo "... SRC/opl.o"
 	@echo "... SRC/opl.i"
 	@echo "... SRC/opl.s"
