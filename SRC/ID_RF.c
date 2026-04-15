@@ -445,7 +445,7 @@ void RF_MarkTileGraphics (void)
   int     tile,next,anims,change;
   unsigned  far *start,far *end,far *info;
   unsigned  i,tilehigh;
-  char    str[80],str2[10];
+  char    str[80],str2[16];
 
   memset (allanims,0,sizeof(allanims));
   numanimchains = 0;
@@ -1728,7 +1728,7 @@ void RF_PlaceSprite (void **user,unsigned globalx,unsigned globaly,
   spritetabletype far *spr;
   spritetype _seg *block;
   unsigned  shift,pixx;
-  char    str[80],str2[10];
+  char    str[80],str2[16];
 
   if (!spritenumber || spritenumber == (unsigned)-1)
   {
@@ -2398,7 +2398,7 @@ void RF_PlaceSprite (void **user,unsigned globalx,unsigned globaly,
   spritetabletype far *spr;
   spritetype _seg *block;
   unsigned  shift,pixx;
-  char    str[80],str2[10];
+  char    str[80],str2[16];
 
   if (!spritenumber || spritenumber == (unsigned)-1)
   {
