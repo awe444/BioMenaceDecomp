@@ -395,7 +395,10 @@ void TXT_Update(void)
         while (SDL_PollEvent(&ev))
         {
             if (ev.type == SDL_QUIT)
+            {
+                TXT_Shutdown();
                 exit(0);
+            }
         }
     }
 
