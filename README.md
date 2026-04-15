@@ -20,6 +20,8 @@ This code produces a 100% identical binary to `BMENACE1.EXE` from the freeware r
 
 ## Compiling the code
 
+### Original DOS build (byte-exact reproduction)
+
 A copy of Borland C++ 2.0 is required, and a DOS environment to run it in (real or emulated).
 The compiler is expected to be installed at `C:\BCC_20` by default.
 The `BIN` subdirectory of the installation should be in the `PATH`.
@@ -30,5 +32,32 @@ Run `LZEXE\LZEXE.EXE BMENACE1.EXE` to do so, and a perfectly matching file shoul
 
 To build the shareware version, uncomment the corresponding `#define` near the top of `ID_HEADS.H`, and comment out the `FREEWARE` `#define`.
 
-In order to play the game using an `EXE` built from this code, the game data from the original release is required -
+### SDL port (Ubuntu 24.04, x86_64)
+
+The SDL port builds the game as a native Linux binary using CMake and SDL2.
+This is a work-in-progress port and does not yet produce a fully playable game.
+
+**Prerequisites:**
+
+Install the required packages:
+
+```bash
+sudo apt-get update
+sudo apt-get install build-essential cmake pkg-config libsdl2-dev
+```
+
+**Building:**
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+This produces a `bmenace1` executable in the `build/` directory.
+
+**Notes:**
+
+In order to play the game, the original game data files from the freeware or shareware release are required —
 this repository doesn't contain any data files.
