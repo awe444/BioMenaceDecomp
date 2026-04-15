@@ -351,8 +351,8 @@ void    VW_Startup (void)
 
 static void VWL_SetupSDLWindow(void)
 {
-    if (sdl_window)
-        return; // already set up
+    if (sdl_window && sdl_renderer && sdl_texture)
+        return; // already fully set up
 
     // Initialize SDL video
     if (SDL_WasInit(SDL_INIT_VIDEO) == 0)
