@@ -729,9 +729,8 @@ static  byte    colors[] = {4,6,13,15,15,15,15,15,15};
   IN_ClearKeysDown();
 
   USL_ClearTextScreen();
-#ifdef SDL_PORT
-  TXT_Shutdown();
-#endif
+  /* In SDL port, TXT_Shutdown() is deferred to VWL_SetupSDLWindow()
+   * so the window can be transferred and reused for graphics mode. */
 }
 
 //      Window/Printing routines

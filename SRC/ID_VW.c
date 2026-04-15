@@ -364,6 +364,10 @@ static void VWL_SetupSDLWindow(void)
     // Try to reuse the text screen window (avoids creating a second window)
 #ifdef SDL_PORT
     sdl_window = (SDL_Window *)TXT_TransferWindow();
+    // Shut down the text-mode renderer/texture now that the window has been
+    // transferred.  TXT_Shutdown() will NOT destroy the window because
+    // TXT_TransferWindow() already cleared the internal pointer.
+    TXT_Shutdown();
 #endif
 
     if (!sdl_window)
@@ -411,6 +415,12 @@ static void VWL_SetupSDLWindow(void)
 
 void    VW_Shutdown (void)
 {
+#ifdef SDL_PORT
+    // In case Quit() is called before the text-mode window was transferred
+    // to graphics mode, make sure the text subsystem is cleaned up.
+    TXT_Shutdown();
+#endif
+
     if (sdl_texture)
     {
         SDL_DestroyTexture(sdl_texture);
