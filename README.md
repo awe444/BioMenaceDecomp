@@ -57,6 +57,72 @@ cmake --build .
 
 This produces a `bmenace1` executable in the `build/` directory.
 
+**Debug build:**
+
+To build with debug symbols and no optimization (useful for debugging with gdb):
+
+```bash
+mkdir build-debug
+cd build-debug
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build .
+```
+
+The `-DCMAKE_BUILD_TYPE=Debug` flag tells CMake to compile with `-g` (debug symbols) and `-O0` (no optimization), which makes debugging much easier since variables won't be optimized away and code will execute in source order.
+
+Other useful build types:
+- `RelWithDebInfo` — optimized build that still includes debug symbols (good for profiling or debugging release-mode-only issues)
+- `Release` — optimized build with no debug symbols (smallest/fastest binary)
+
+**Debugging with gdb:**
+
+If the game crashes, you can use gdb to get a detailed backtrace showing exactly where the crash occurred:
+
+```bash
+cd build-debug
+gdb ./bmenace1
+```
+
+At the gdb prompt, type `run` to start the game:
+```
+(gdb) run
+```
+
+When the game crashes, gdb will stop at the crash location. Use these commands to investigate:
+
+```
+(gdb) bt              # print a full backtrace (call stack)
+(gdb) bt full         # backtrace with local variable values
+(gdb) frame N         # switch to stack frame N (from the backtrace)
+(gdb) print varname   # print the value of a variable
+(gdb) info locals     # print all local variables in the current frame
+(gdb) list            # show source code around the current location
+```
+
+You can also set breakpoints before running:
+```
+(gdb) break main          # break at the start of main()
+(gdb) break ID_CA.c:650   # break at a specific file and line
+(gdb) break CA_CacheMap   # break when a function is called
+(gdb) run                  # start the program
+(gdb) continue             # resume after hitting a breakpoint
+(gdb) next                 # step over to the next line
+(gdb) step                 # step into a function call
+```
+
+To get a backtrace from a core dump after the fact:
+```bash
+# Enable core dumps
+ulimit -c unlimited
+
+# Run the game (it will produce a 'core' file on crash)
+./bmenace1
+
+# Analyze the core dump
+gdb ./bmenace1 core
+(gdb) bt full
+```
+
 **Notes:**
 
 In order to play the game, the original game data files from the freeware or shareware release are required —
