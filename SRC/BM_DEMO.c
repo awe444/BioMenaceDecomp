@@ -194,8 +194,8 @@ void RunDemo(Sint16 num)
   demodata = grsegs[num];
   gamestate.mapon = demodata[0];
   DemoSize = demodata[1];
-  MM_GetPtr(&(memptr)DemoBuffer, DemoSize);
-  MM_SetLock(&(memptr)DemoBuffer, true);
+  { memptr _tmp = (memptr)DemoBuffer; MM_GetPtr(&_tmp, DemoSize); DemoBuffer = _tmp; }
+  { memptr _tmp = (memptr)DemoBuffer; MM_SetLock(&_tmp, true); }
   _fmemcpy(DemoBuffer, ((char _seg *)grsegs[num])+4, DemoSize);
   MM_FreePtr(&grsegs[num]);
   IN_StartDemoPlayback(DemoBuffer, DemoSize);
@@ -206,7 +206,7 @@ void RunDemo(Sint16 num)
   }
   PlayLoop();
   IN_StopDemo();
-  MM_FreePtr(&(memptr)DemoBuffer);
+  { memptr _tmp = (memptr)DemoBuffer; MM_FreePtr(&_tmp); DemoBuffer = _tmp; }
   VW_FixRefreshBuffer();
   CA_ClearMarks();
 

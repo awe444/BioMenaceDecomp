@@ -142,6 +142,8 @@ static inline void clrscr(void) {}
 static inline int wherex(void) { return 1; }
 static inline int wherey(void) { return 1; }
 static inline void cputs(const char *s) { fputs(s, stdout); }
+static inline void textbackground(int color) { (void)color; }
+static inline int getch(void) { return 0; }
 
 /* bioskey stub */
 #define _KEYBRD_READY 1

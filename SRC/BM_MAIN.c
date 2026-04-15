@@ -576,9 +576,15 @@ static boolean CheckCopyProtection(void)
 ==========================
 */
 
-void main(void)
+int _argc;
+char **_argv;
+
+int main(int argc, char *argv[])
 {
   static char *ParmStrings[] = {"sewerman", ""};
+
+  _argc = argc;
+  _argv = argv;
 
 #ifndef SHAREWARE
   copyprotectionfailed = CheckCopyProtection();

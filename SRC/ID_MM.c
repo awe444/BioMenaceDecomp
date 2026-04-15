@@ -294,3 +294,21 @@ void MM_MapEMS (void)
 }
 
 
+
+//==========================================================================
+
+/*
+====================
+=
+= MML_UseSpace
+=
+= No-op in SDL port (no segment-based memory reclamation)
+=
+====================
+*/
+
+void MML_UseSpace (unsigned segstart, unsigned seglength)
+{
+  (void)segstart;
+  (void)seglength;
+}
