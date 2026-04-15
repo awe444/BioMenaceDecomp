@@ -24,12 +24,19 @@ void TXT_Init(void);
 /* Render the current text buffer contents to the SDL window. */
 void TXT_Update(void);
 
-/* Destroy the text screen SDL window/renderer.
+/* Destroy the text screen SDL resources (texture, renderer).
+ * If the window was transferred via TXT_TransferWindow(), it is NOT destroyed.
  * Called when transitioning to graphics mode. */
 void TXT_Shutdown(void);
 
 /* Return a pointer to the text buffer (4000 bytes, char+attr pairs).
  * This replaces DOS VGA text memory at segment 0xB800. */
 uint8_t *TXT_GetBuffer(void);
+
+/* Transfer ownership of the SDL window to the caller (VW_Startup).
+ * Returns the SDL_Window* (as void*) and clears it internally so that
+ * TXT_Shutdown() won't destroy it.
+ * Returns NULL if no window exists. */
+void *TXT_TransferWindow(void);
 
 #endif /* ID_TEXTSCR_H */

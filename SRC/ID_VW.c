@@ -30,6 +30,9 @@
 
 #include "ID_HEADS.H"
 #include <SDL.h>
+#ifdef SDL_PORT
+#include "ID_TEXTSCR.h"
+#endif
 
 extern int _argc;
 extern char **_argv;
@@ -304,35 +307,9 @@ void    VW_Startup (void)
 
     grmode = EGAGR;
 
-    // Initialize SDL video
-    if (SDL_WasInit(SDL_INIT_VIDEO) == 0)
-    {
-        if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
-            Quit("SDL video init failed!");
-    }
-
-    sdl_window = SDL_CreateWindow("Bio Menace",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        SCREEN_W * SCREEN_SCALE, SCREEN_H * SCREEN_SCALE,
-        SDL_WINDOW_SHOWN);
-    if (!sdl_window)
-        Quit("SDL_CreateWindow failed!");
-
-    sdl_renderer = SDL_CreateRenderer(sdl_window, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!sdl_renderer)
-        sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
-    if (!sdl_renderer)
-        Quit("SDL_CreateRenderer failed!");
-
-    SDL_RenderSetLogicalSize(sdl_renderer, SCREEN_W, SCREEN_H);
-
-    sdl_texture = SDL_CreateTexture(sdl_renderer,
-        SDL_PIXELFORMAT_ARGB8888,
-        SDL_TEXTUREACCESS_STREAMING,
-        SCREEN_W, SCREEN_H);
-    if (!sdl_texture)
-        Quit("SDL_CreateTexture failed!");
+    // SDL window/renderer/texture creation is deferred to VWL_SetupSDLWindow()
+    // which is called from VW_SetScreenMode(). This allows the text screen to
+    // keep using its window until it's done.
 
     // Clear framebuffer
     memset(screenbuffer, 0, sizeof(screenbuffer));
@@ -359,6 +336,67 @@ void    VW_Startup (void)
     }
 
     cursorvisible = 0;
+}
+
+//===========================================================================
+
+/*
+=========================
+=
+= VWL_SetupSDLWindow - Creates (or takes over) the SDL window, renderer,
+=                       and texture for graphics mode.
+=
+=========================
+*/
+
+static void VWL_SetupSDLWindow(void)
+{
+    if (sdl_window)
+        return; // already set up
+
+    // Initialize SDL video
+    if (SDL_WasInit(SDL_INIT_VIDEO) == 0)
+    {
+        if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
+            Quit("SDL video init failed!");
+    }
+
+    // Try to reuse the text screen window (avoids creating a second window)
+#ifdef SDL_PORT
+    sdl_window = (SDL_Window *)TXT_TransferWindow();
+#endif
+
+    if (!sdl_window)
+    {
+        sdl_window = SDL_CreateWindow("Bio Menace",
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            SCREEN_W * SCREEN_SCALE, SCREEN_H * SCREEN_SCALE,
+            SDL_WINDOW_SHOWN);
+    }
+    else
+    {
+        // Resize the transferred text-mode window for graphics mode
+        SDL_SetWindowSize(sdl_window, SCREEN_W * SCREEN_SCALE, SCREEN_H * SCREEN_SCALE);
+        SDL_SetWindowPosition(sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
+    if (!sdl_window)
+        Quit("SDL_CreateWindow failed!");
+
+    sdl_renderer = SDL_CreateRenderer(sdl_window, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!sdl_renderer)
+        sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
+    if (!sdl_renderer)
+        Quit("SDL_CreateRenderer failed!");
+
+    SDL_RenderSetLogicalSize(sdl_renderer, SCREEN_W, SCREEN_H);
+
+    sdl_texture = SDL_CreateTexture(sdl_renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        SCREEN_W, SCREEN_H);
+    if (!sdl_texture)
+        Quit("SDL_CreateTexture failed!");
 }
 
 //===========================================================================
@@ -408,6 +446,7 @@ void VW_SetScreenMode (int grmode)
             break;
         case CGAGR:
         case EGAGR:
+            VWL_SetupSDLWindow();
             memset(screenbuffer, 0, sizeof(screenbuffer));
             screenseg = 0xa000;
             break;

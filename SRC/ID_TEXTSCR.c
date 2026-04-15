@@ -456,6 +456,9 @@ void TXT_Shutdown(void)
         SDL_DestroyRenderer(txt_renderer);
         txt_renderer = NULL;
     }
+    /* NOTE: txt_window is intentionally NOT destroyed here.
+     * The window is transferred to VW_Startup via TXT_TransferWindow().
+     * If no one claimed it, we destroy it. */
     if (txt_window)
     {
         SDL_DestroyWindow(txt_window);
@@ -469,4 +472,14 @@ uint8_t *TXT_GetBuffer(void)
     if (!txt_initialized)
         TXT_Init();
     return txt_buffer;
+}
+
+void *TXT_TransferWindow(void)
+{
+    SDL_Window *w = txt_window;
+
+    /* Clear the window pointer so TXT_Shutdown() won't destroy it */
+    txt_window = NULL;
+
+    return w;
 }
