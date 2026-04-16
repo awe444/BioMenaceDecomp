@@ -759,7 +759,14 @@ void
 US_Print(char *s)
 {
   char    c,*se;
+  char    buf[256];
   word    w,h;
+
+  // Copy to a writable buffer so we can safely modify it in-place.
+  // String literals are in read-only memory on modern platforms.
+  strncpy(buf, s, sizeof(buf) - 1);
+  buf[sizeof(buf) - 1] = '\0';
+  s = buf;
 
   while (*s)
   {
