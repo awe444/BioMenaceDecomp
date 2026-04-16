@@ -1434,7 +1434,7 @@ void RF_CalcTics (void)
 //
     oldtimecount = lasttimecount;
     while (TimeCount<oldtimecount+DEMOTICS*2)
-    ;
+      SD_UpdateTimeCount();
     lasttimecount = oldtimecount + DEMOTICS;
     TimeCount = lasttimecount + DEMOTICS;
     tics = DEMOTICS;

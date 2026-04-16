@@ -194,6 +194,7 @@ extern  SMMode    MusicMode;
 extern  longword  TimeCount;          // Global time in ticks
 
 // Function prototypes
+extern  void  SD_UpdateTimeCount(void);
 extern  void  SD_Startup(void),
         SD_Shutdown(void),
         SD_Default(boolean gotit,SDMode sd,SMMode sm),

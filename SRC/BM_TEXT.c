@@ -205,7 +205,7 @@ void TimedPicCommand(void)
 //
   TimeCount = 0;
   while (picdelay > TimeCount)
-  ;
+    SD_UpdateTimeCount();
 
 //
 // draw pic

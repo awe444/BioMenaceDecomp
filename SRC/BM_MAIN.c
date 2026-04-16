@@ -159,16 +159,24 @@ void InitGame(void)
   US_TextScreen();
   _setcursortype(_NOCURSOR);
 
+  fprintf(stderr, "[DIAG] InitGame: MM_Startup\n");
   MM_Startup();
+  fprintf(stderr, "[DIAG] InitGame: VW_Startup\n");
   VW_Startup();
+  fprintf(stderr, "[DIAG] InitGame: RF_Startup\n");
   RF_Startup();
+  fprintf(stderr, "[DIAG] InitGame: IN_Startup\n");
   IN_Startup();
+  fprintf(stderr, "[DIAG] InitGame: SD_Startup\n");
   SD_Startup();
+  fprintf(stderr, "[DIAG] InitGame: US_Startup\n");
   US_Startup();
 
   US_UpdateTextScreen();
 
+  fprintf(stderr, "[DIAG] InitGame: CA_Startup\n");
   CA_Startup();
+  fprintf(stderr, "[DIAG] InitGame: US_Setup\n");
   US_Setup();
 
   US_SetLoadSaveHooks(&LoadTheGame, &SaveTheGame, &ResetGame);
@@ -358,6 +366,7 @@ void DemoLoop(void)
   playstate = ex_stillplaying;
   while (1)
   {
+    fprintf(stderr, "[DIAG] DemoLoop state=%d\n", state);
     switch (state++)
     {
     case 0:
@@ -600,13 +609,17 @@ int main(int argc, char *argv[])
 
   storedemo = false;
 
+  fprintf(stderr, "[DIAG] InitGame starting...\n");
   InitGame();
+  fprintf(stderr, "[DIAG] InitGame done, checking memory...\n");
   CheckMemory();
+  fprintf(stderr, "[DIAG] CheckMemory passed\n");
 
   gamestate.var44 = 0;
 
   _setcursortype(_NORMALCURSOR);
 
+  fprintf(stderr, "[DIAG] Entering DemoLoop\n");
   DemoLoop();
   Quit("Demo loop exited???");
 }

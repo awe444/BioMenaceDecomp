@@ -270,6 +270,8 @@ IN_PumpEvents(void)
   byte k, c;
   int player;
 
+  SD_UpdateTimeCount();
+
   while (SDL_PollEvent(&ev))
   {
     switch (ev.type)
@@ -527,7 +529,7 @@ IN_GetJoyButtonsDB(word joy)
     result1 = INL_GetJoyButtons(joy);
     lasttime = TimeCount;
     while (TimeCount == lasttime)
-      ;
+      SD_UpdateTimeCount();
     result2 = INL_GetJoyButtons(joy);
   } while (result1 != result2);
   return(result1);
