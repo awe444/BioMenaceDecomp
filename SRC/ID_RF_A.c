@@ -19,8 +19,9 @@ extern unsigned originmap;
 extern byte *updatestart[2];
 
 #define TILEWIDTH_EGA  2
-#define TILESWIDE_ASM  21
-#define TILESHIGH_ASM  14
+
+/* Size of the update scan area: (PORTTILESWIDE+1) * PORTTILESHIGH */
+#define UPDATE_SCAN_SIZE  ((PORTTILESWIDE + 1) * PORTTILESHIGH)
 
 
 /*
@@ -55,6 +56,7 @@ void RFL_NewTile(unsigned updateoffset)
 
 	//
 	// get the foreground and background tile numbers from the map planes
+	// mapofs is a byte offset; divide by 2 to get the uint16_t word index
 	//
 	fg = mapsegs[1][mapofs / 2];   // foreground map plane
 	bg = mapsegs[0][mapofs / 2];   // background map plane
@@ -106,7 +108,7 @@ void RFL_UpdateTiles(void)
 	unsigned src, dest;
 
 	scan = updateptr;
-	end = updateptr + (TILESWIDE_ASM + 1) * TILESHIGH_ASM;
+	end = updateptr + UPDATE_SCAN_SIZE;
 
 	while (scan < end)
 	{
@@ -163,7 +165,7 @@ void RFL_MaskForegroundTiles(void)
 	unsigned dest;
 
 	scan = updateptr;
-	end = updateptr + (TILESWIDE_ASM + 1) * TILESHIGH_ASM;
+	end = updateptr + UPDATE_SCAN_SIZE;
 
 	while (scan < end)
 	{
@@ -181,6 +183,7 @@ void RFL_MaskForegroundTiles(void)
 
 		//
 		// found a tile marked 3, see if it needs a masked foreground
+		// mapofs is a byte offset; divide by 2 to get the uint16_t word index
 		//
 		mapofs = updatemapofs[updateoffset] + originmap;
 		fg = mapsegs[1][mapofs / 2];   // foreground tile number
