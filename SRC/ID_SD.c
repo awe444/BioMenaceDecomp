@@ -72,6 +72,7 @@ extern char **_argv;
   longword  TimeCount;
   word    HackCount;
   word    *SoundTable;  // Really * _seg *SoundTable, but that don't work
+  word    SoundTableOffset;  // SDL port: offset into audiosegs[] for sound lookup
   boolean   ssIsTandy;
   word    ssPort = 2;
 
@@ -592,6 +593,7 @@ SD_SetSoundMode(SDMode mode)
     SoundMode = mode;
 #ifndef _MUSE_
     SoundTable = (word *)(&audiosegs[tableoffset]);
+    SoundTableOffset = tableoffset;
 #endif
     SDL_StartDevice();
   }
@@ -784,7 +786,7 @@ SD_PlaySound(soundnames sound)
   if ((SoundMode == sdm_Off) /*|| (sound == -1)*/)
     return;
 
-  s = MK_FP(SoundTable[sound],0);
+  s = (SoundCommon far *)audiosegs[SoundTableOffset + sound];
   if (!s)
     Quit("SD_PlaySound() - Uncached sound");
   if (!s->length)
