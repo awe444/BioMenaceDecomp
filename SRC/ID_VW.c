@@ -56,6 +56,9 @@ extern char **_argv;
 #define SCREEN_W        320
 #define SCREEN_H        200
 
+// EGA VRAM size per plane (original hardware had 64KB per plane)
+#define EGA_VRAM_SIZE   0x10000u
+
 /*
 =============================================================================
 
@@ -125,7 +128,7 @@ static SDL_Renderer *sdl_renderer;
 static SDL_Texture *sdl_texture;
 
 // Software EGA framebuffer: 4 bitplanes
-static uint8_t screenbuffer[4][SCREENWIDTH * VIRTUALHEIGHT];
+static uint8_t screenbuffer[4][EGA_VRAM_SIZE];
 
 // Active palette: 16 EGA color indices mapped to RGB
 static uint8_t active_palette[16][3];
@@ -247,7 +250,7 @@ void VW_Present(void)
             unsigned planeofs = displayofs + ylookup[y] + srcbyte;
 
             unsigned color = 0;
-            if (planeofs < SCREENWIDTH * VIRTUALHEIGHT)
+            if (planeofs < EGA_VRAM_SIZE)
             {
                 color = ((screenbuffer[0][planeofs] >> srcbit) & 1)
                       | (((screenbuffer[1][planeofs] >> srcbit) & 1) << 1)
@@ -720,7 +723,7 @@ void VW_Plot(unsigned x, unsigned y, unsigned color)
     unsigned bitmask = 0x80 >> (x & 7);
     int plane;
 
-    if (byteofs >= SCREENWIDTH * VIRTUALHEIGHT)
+    if (byteofs >= EGA_VRAM_SIZE)
         return;
 
     for (plane = 0; plane < 4; plane++)
@@ -755,7 +758,7 @@ void VW_Vlin(unsigned yl, unsigned yh, unsigned x, unsigned color)
 
     for (y = yl; y <= yh; y++)
     {
-        if (byteofs < SCREENWIDTH * VIRTUALHEIGHT)
+        if (byteofs < EGA_VRAM_SIZE)
         {
             for (plane = 0; plane < 4; plane++)
             {
@@ -803,7 +806,7 @@ void VW_Hlin(unsigned xl, unsigned xh, unsigned y, unsigned color)
     if (xlb == xhb)
     {
         uint8_t mask = maskleft & maskright;
-        if (dest < SCREENWIDTH * VIRTUALHEIGHT)
+        if (dest < EGA_VRAM_SIZE)
         {
             for (plane = 0; plane < 4; plane++)
             {
@@ -817,7 +820,7 @@ void VW_Hlin(unsigned xl, unsigned xh, unsigned y, unsigned color)
     }
 
     // Left edge
-    if (dest < SCREENWIDTH * VIRTUALHEIGHT)
+    if (dest < EGA_VRAM_SIZE)
     {
         for (plane = 0; plane < 4; plane++)
         {
@@ -836,7 +839,7 @@ void VW_Hlin(unsigned xl, unsigned xh, unsigned y, unsigned color)
         unsigned i;
         for (i = 0; i < mid; i++, pos++)
         {
-            if (pos < SCREENWIDTH * VIRTUALHEIGHT)
+            if (pos < EGA_VRAM_SIZE)
             {
                 for (plane = 0; plane < 4; plane++)
                 {
@@ -852,7 +855,7 @@ void VW_Hlin(unsigned xl, unsigned xh, unsigned y, unsigned color)
     // Right edge
     {
         unsigned rpos = dest + (xhb - xlb);
-        if (rpos < SCREENWIDTH * VIRTUALHEIGHT)
+        if (rpos < EGA_VRAM_SIZE)
         {
             for (plane = 0; plane < 4; plane++)
             {
@@ -925,7 +928,7 @@ void VW_DrawTile8(unsigned x, unsigned y, unsigned tile)
         unsigned pos = dest;
         for (row = 0; row < 8; row++)
         {
-            if (pos < SCREENWIDTH * VIRTUALHEIGHT)
+            if (pos < EGA_VRAM_SIZE)
                 screenbuffer[plane][pos] = *source;
             source++;
             pos += linewidth;
@@ -966,7 +969,7 @@ void VW_MaskBlock(memptr segm, unsigned ofs, unsigned dest,
         {
             for (col = 0; col < wide; col++)
             {
-                if (screenofs + col < SCREENWIDTH * VIRTUALHEIGHT)
+                if (screenofs + col < EGA_VRAM_SIZE)
                 {
                     screenbuffer[plane][screenofs + col] =
                         (screenbuffer[plane][screenofs + col] & mp[col]) | dp[col];
@@ -1006,7 +1009,7 @@ void VW_InverseMask(memptr segm, unsigned ofs, unsigned dest,
             unsigned pos = dest + col;
             uint8_t val = ~(*source);
             source++;
-            if (pos < SCREENWIDTH * VIRTUALHEIGHT)
+            if (pos < EGA_VRAM_SIZE)
             {
                 for (plane = 0; plane < 4; plane++)
                     screenbuffer[plane][pos] |= val;
@@ -1041,8 +1044,8 @@ void VW_ScreenToScreen(unsigned source, unsigned dest, unsigned wide, unsigned h
         {
             for (col = 0; col < wide; col++)
             {
-                if (dofs + col < SCREENWIDTH * VIRTUALHEIGHT &&
-                    sofs + col < SCREENWIDTH * VIRTUALHEIGHT)
+                if (dofs + col < EGA_VRAM_SIZE &&
+                    sofs + col < EGA_VRAM_SIZE)
                 {
                     screenbuffer[plane][dofs + col] = screenbuffer[plane][sofs + col];
                 }
@@ -1078,7 +1081,7 @@ void VW_MemToScreen(memptr source, unsigned dest, unsigned width, unsigned heigh
         {
             for (col = 0; col < width; col++)
             {
-                if (screenofs + col < SCREENWIDTH * VIRTUALHEIGHT)
+                if (screenofs + col < EGA_VRAM_SIZE)
                     screenbuffer[plane][screenofs + col] = *src;
                 src++;
             }
@@ -1112,7 +1115,7 @@ void VW_ScreenToMem(unsigned source, memptr dest, unsigned width, unsigned heigh
         {
             for (col = 0; col < width; col++)
             {
-                if (screenofs + col < SCREENWIDTH * VIRTUALHEIGHT)
+                if (screenofs + col < EGA_VRAM_SIZE)
                     *dst = screenbuffer[plane][screenofs + col];
                 else
                     *dst = 0;
@@ -1328,7 +1331,7 @@ static void BufferToScreen(uint8_t *buf, unsigned bwidth, unsigned bheight,
             uint8_t val = buf[row * BUFFWIDTH + col];
             unsigned pos = scrofs + col;
 
-            if (pos < SCREENWIDTH * VIRTUALHEIGHT)
+            if (pos < EGA_VRAM_SIZE)
             {
                 if (drawmode == 8)
                 {
@@ -1681,8 +1684,8 @@ static void VWL_UpdateScreenBlocks (void)
                     unsigned drow = screenstart + row * linewidth;
                     for (col = 0; col < bytewidth; col++)
                     {
-                        if (drow + col < SCREENWIDTH * VIRTUALHEIGHT &&
-                            srow + col < SCREENWIDTH * VIRTUALHEIGHT)
+                        if (drow + col < EGA_VRAM_SIZE &&
+                            srow + col < EGA_VRAM_SIZE)
                         {
                             screenbuffer[plane][drow + col] = screenbuffer[plane][srow + col];
                         }
