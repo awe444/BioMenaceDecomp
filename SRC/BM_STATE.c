@@ -1209,6 +1209,8 @@ void StateMachine(objtype *ob)
 
   while (excesstics)
   {
+    if (!state)
+      break;        // object removed itself, handle after loop
   //
   // passed through to next state
   //
