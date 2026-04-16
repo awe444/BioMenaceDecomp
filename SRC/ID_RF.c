@@ -480,7 +480,7 @@ void RF_MarkTileGraphics (void)
           for (i=0;i<numanimchains;i++)
             if (allanims[i].current == tile)
             {
-              *info = (unsigned)&allanims[i];
+              *info = i;
               goto nextback;
             }
 
@@ -490,7 +490,7 @@ void RF_MarkTileGraphics (void)
             Quit ("RF_MarkTileGraphics: Too many unique animated tiles!");
           allanims[i].current = tile;
           allanims[i].count = tinf[SPEED+tile];
-          *info = (unsigned)&allanims[i];
+          *info = i;
           numanimchains++;
         }
 
@@ -546,7 +546,7 @@ nextback:
           for (i=0;i<numanimchains;i++)
             if (allanims[i].current == tilehigh)
             {
-              *info = (unsigned)&allanims[i];
+              *info = i;
               goto nextfront;
             }
 
@@ -556,7 +556,7 @@ nextback:
             Quit ("RF_MarkTileGraphics: Too many unique animated tiles!");
           allanims[i].current = tilehigh;
           allanims[i].count = tinf[MSPEED+tile];
-          *info = (unsigned)&allanims[i];
+          *info = i;
           numanimchains++;
         }
 
@@ -628,7 +628,7 @@ void RFL_CheckForAnimTile (unsigned x, unsigned y)
   uint16_t  far *map;
   animtiletype  *anim,*next;
 
-// the info plane of each animating tile has a near pointer into allanims[]
+// the info plane of each animating tile has an index into allanims[]
 // which gives the current state of all concurrently animating tiles
 
   offset = mapbwidthtable[y]/2+x;
@@ -655,7 +655,7 @@ void RFL_CheckForAnimTile (unsigned x, unsigned y)
     anim->y = y;
     anim->tile = tile;
     anim->mapplane = map;
-    anim->chain = (tiletype *)*(mapsegs[2]+offset);
+    anim->chain = &allanims[*(mapsegs[2]+offset)];
   }
 
 //
@@ -680,7 +680,7 @@ void RFL_CheckForAnimTile (unsigned x, unsigned y)
     anim->y = y;
     anim->tile = tile;
     anim->mapplane = map;
-    anim->chain = (tiletype *)*(mapsegs[2]+offset);
+    anim->chain = &allanims[*(mapsegs[2]+offset)];
   }
 
 }
