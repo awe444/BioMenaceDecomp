@@ -1446,6 +1446,7 @@ void RF_CalcTics (void)
 //
     do
     {
+      SD_UpdateTimeCount();
       newtime = TimeCount;
       tics = newtime-lasttimecount;
     } while (tics<MINTICS);
