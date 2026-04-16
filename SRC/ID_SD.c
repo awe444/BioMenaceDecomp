@@ -72,7 +72,7 @@ extern char **_argv;
   longword  TimeCount;
   word    HackCount;
   word    *SoundTable;  // Really * _seg *SoundTable, but that don't work
-  word    SoundTableOffset;  // SDL port: offset into audiosegs[] for sound lookup
+  word    SoundTableOffset;  // SDL port: base index into audiosegs[], so audiosegs[SoundTableOffset + sound] gives the sound data
   boolean   ssIsTandy;
   word    ssPort = 2;
 
