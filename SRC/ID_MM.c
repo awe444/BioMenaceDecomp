@@ -80,10 +80,10 @@ void MM_Startup (void)
   aftersort = NULL;
 
   mminfo.nearheap = 0;
-  mminfo.farheap = 0;
+  mminfo.farheap = 1024L * 1024L; // report 1 MB of far heap available
   mminfo.EMSmem = 0;
   mminfo.XMSmem = 0;
-  mminfo.mainmem = 1024L * 1024L; // report 1 MB available
+  mminfo.mainmem = mminfo.farheap;
 
   MM_GetPtr (&bufferseg, BUFFERSIZE);
 }
