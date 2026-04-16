@@ -1707,6 +1707,13 @@ static void VWL_UpdateScreenBlocks (void)
 
 void VW_UpdateScreen (void)
 {
+    // Poll SDL events every frame. On original DOS, the keyboard ISR and
+    // timer interrupt updated LastScan/TimeCount automatically. With SDL
+    // we must pump events explicitly so that input works in all game loops
+    // (e.g. the control panel menu) that check LastScan without calling
+    // dedicated input-wait functions.
+    IN_PumpEvents();
+
     if (cursorvisible>0)
         VWL_DrawCursor();
 
