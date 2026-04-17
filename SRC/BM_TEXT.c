@@ -56,7 +56,7 @@ TEXT FORMATTING COMMANDS
 #define RIGHTMARGIN 10
 #define PICMARGIN 8
 #define SPACEWIDTH 7
-#define TEXTROWS ((200-TOPMARGIN-BOTTOMMARGIN)/FONTHEIGHT)
+#define TEXTROWS ((240-TOPMARGIN-BOTTOMMARGIN)/FONTHEIGHT)
 #define SCREENPIXWIDTH 320
 #define SCREENMID (SCREENPIXWIDTH/2)
 
@@ -198,7 +198,7 @@ void TimedPicCommand(void)
 // update the screen, and wait for time delay
 //
   VW_WaitVBL(1);
-  VW_ScreenToScreen(bufferofs, displayofs, 40, 200);
+  VW_ScreenToScreen(bufferofs, displayofs, 40, 240);
 
 //
 // wait for time
@@ -531,7 +531,7 @@ void PageLayout(boolean shownumber)
 //
 // clear the screen
 //
-  VWB_Bar(0, 0, 320, 200, BACKCOLOR);
+  VWB_Bar(0, 0, 320, 240, BACKCOLOR);
   VWB_DrawPic( 16, 0, H_TOPWINDOW_PIC);
   VWB_DrawPic(  0, 0, H_LEFTWINDOW_PIC);
   VWB_DrawPic(304, 0, H_RIGHTWINDOW_PIC);
@@ -712,7 +712,7 @@ Sint16 HelpMenu(void)
   Sint16 ydelta;
   Uint16 key;
 
-  VWB_Bar(0, 0, 320, 200, BACKCOLOR);
+  VWB_Bar(0, 0, 320, 240, BACKCOLOR);
 
   CA_CacheGrChunk(H_HELP_PIC);
   CA_CacheGrChunk(H_HAND_PIC);

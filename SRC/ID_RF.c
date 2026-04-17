@@ -50,9 +50,9 @@ updated
 */
 
 #define SCREENTILESWIDE 20
-#define SCREENTILESHIGH 13
+#define SCREENTILESHIGH 15
 
-#define SCREENSPACE   (SCREENWIDTH*240)
+#define SCREENSPACE   (SCREENWIDTH*272)
 #define FREEEGAMEM    (0x10000l-3l*SCREENSPACE)
 
 //
@@ -76,7 +76,7 @@ unsigned  SX_T_SHIFT;   // screen x >> ?? = tile EGA = 1, CGA = 2;
 
 #define EGAPORTSCREENWIDE 42
 #define CGAPORTSCREENWIDE 84
-#define PORTSCREENHIGH    224
+#define PORTSCREENHIGH    256
 
 #define UPDATESCREENSIZE  (UPDATEWIDE*PORTTILESHIGH+2)
 #define UPDATESPARESIZE   (UPDATEWIDE*2+4)
@@ -396,7 +396,7 @@ void RF_NewMap (void)
 
 //
 // the y max value clips off the bottom half of a tile so a map that is
-// 13 + MAPBORDER*2 tile high will not scroll at all vertically
+// SCREENTILESHIGH + MAPBORDER*2 tile high will not scroll at all vertically
 //
   originxmax = (mapwidth-MAPBORDER-SCREENTILESWIDE)*TILEGLOBAL;
   originymax = (mapheight-MAPBORDER-SCREENTILESHIGH)*TILEGLOBAL;
@@ -404,6 +404,25 @@ void RF_NewMap (void)
     originxmax=originxmin;
   if (originymax<originymin)
     originymax=originymin;
+
+//
+// ensure the full port tile buffer fits within the map vertically;
+// maps designed for a smaller viewport may not have enough rows
+//
+  if (originymin + PORTTILESHIGH * TILEGLOBAL > mapheight * TILEGLOBAL)
+  {
+    originymin = (mapheight > PORTTILESHIGH) ?
+      (mapheight - PORTTILESHIGH) * TILEGLOBAL : 0;
+    if (originymax < originymin)
+      originymax = originymin;
+  }
+  if (originxmin + PORTTILESWIDE * TILEGLOBAL > mapwidth * TILEGLOBAL)
+  {
+    originxmin = (mapwidth > PORTTILESWIDE) ?
+      (mapwidth - PORTTILESWIDE) * TILEGLOBAL : 0;
+    if (originxmax < originxmin)
+      originxmax = originxmin;
+  }
 
 //
 // clear out the lists
@@ -1025,6 +1044,23 @@ void RFL_BoundScroll (int x, int y)
       }
   }
 
+//
+// safety clamp: ensure the port buffer stays within the map even if
+// scroll blocks did not fire (the larger viewport can reach the map
+// edge with fewer tiles of margin than the original 14-tile port)
+//
+  {
+    unsigned maxorgx = (mapwidth > PORTTILESWIDE) ? (mapwidth - PORTTILESWIDE) * TILEGLOBAL : 0;
+    unsigned maxorgy = (mapheight > PORTTILESHIGH) ? (mapheight - PORTTILESHIGH) * TILEGLOBAL : 0;
+    if (originxglobal < originxmin)
+      originxglobal = originxmin;
+    else if (originxglobal > maxorgx)
+      originxglobal = maxorgx;
+    if (originyglobal < originymin)
+      originyglobal = originymin;
+    else if (originyglobal > maxorgy)
+      originyglobal = maxorgy;
+  }
 
   RFL_CalcOriginStuff (originxglobal, originyglobal);
 }
@@ -1324,18 +1360,29 @@ void RFL_BoundNewOrigin (unsigned orgx,unsigned orgy)
   for (check=0;check<hscrollblocks;check++)
   {
     edge = hscrolledge[check];
-    if (edge>=originytile && edge <=originytile+6)
+    if (edge>=originytile && edge <=(int)originytile+PORTTILESHIGH/2-1)
     {
       orgy = (edge+1)*TILEGLOBAL;
       break;
     }
-    if (edge>=originytile+7 && edge <=originytile+13)
+    if (edge>=(int)originytile+PORTTILESHIGH/2 && edge <=(int)originytile+PORTTILESHIGH-1)
     {
-      orgy = (edge-13)*TILEGLOBAL;
+      orgy = (edge-(PORTTILESHIGH-1))*TILEGLOBAL;
       break;
     }
   }
 
+//
+// ensure the port buffer fits within the map after scroll block adjustments
+//
+  {
+    unsigned maxytile = (mapheight > PORTTILESHIGH) ? (mapheight - PORTTILESHIGH) : 0;
+    unsigned maxxtile = (mapwidth > PORTTILESWIDE) ? (mapwidth - PORTTILESWIDE) : 0;
+    if ((orgy>>G_T_SHIFT) > maxytile)
+      orgy = maxytile * TILEGLOBAL;
+    if ((orgx>>G_T_SHIFT) > maxxtile)
+      orgx = maxxtile * TILEGLOBAL;
+  }
 
   RFL_CalcOriginStuff (orgx,orgy);
 }

@@ -25,7 +25,7 @@ INCLUDE	"ID_ASM.EQU"
 ;============================================================================
 
 TILESWIDE	=	21
-TILESHIGH	=	14
+TILESHIGH	=	16
 
 UPDATESIZE	=	(TILESWIDE+1)*TILESHIGH+1
 

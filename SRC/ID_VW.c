@@ -54,7 +54,7 @@ extern char **_argv;
 
 #define SCREEN_SCALE    1
 #define SCREEN_W        320
-#define SCREEN_H        200
+#define SCREEN_H        240
 
 // EGA VRAM size per plane (original hardware had 64KB per plane)
 #define EGA_VRAM_SIZE   0x10000u
