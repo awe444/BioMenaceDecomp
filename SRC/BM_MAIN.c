@@ -36,7 +36,6 @@
 #include "BM_DEF.H"
 
 #if SDL_PORT && defined(__ANDROID__)
-#include <SDL.h>
 #include <setjmp.h>
 /*
  * On Android, SDL2 runs main() (== SDL_main) in a dedicated native thread.
@@ -182,24 +181,24 @@ void InitGame(void)
   US_TextScreen();
   _setcursortype(_NOCURSOR);
 
-  fprintf(stderr, "[DIAG] InitGame: MM_Startup\n");
+  BM_LOG("[DIAG] InitGame: MM_Startup");
   MM_Startup();
-  fprintf(stderr, "[DIAG] InitGame: VW_Startup\n");
+  BM_LOG("[DIAG] InitGame: VW_Startup");
   VW_Startup();
-  fprintf(stderr, "[DIAG] InitGame: RF_Startup\n");
+  BM_LOG("[DIAG] InitGame: RF_Startup");
   RF_Startup();
-  fprintf(stderr, "[DIAG] InitGame: IN_Startup\n");
+  BM_LOG("[DIAG] InitGame: IN_Startup");
   IN_Startup();
-  fprintf(stderr, "[DIAG] InitGame: SD_Startup\n");
+  BM_LOG("[DIAG] InitGame: SD_Startup");
   SD_Startup();
-  fprintf(stderr, "[DIAG] InitGame: US_Startup\n");
+  BM_LOG("[DIAG] InitGame: US_Startup");
   US_Startup();
 
   US_UpdateTextScreen();
 
-  fprintf(stderr, "[DIAG] InitGame: CA_Startup\n");
+  BM_LOG("[DIAG] InitGame: CA_Startup");
   CA_Startup();
-  fprintf(stderr, "[DIAG] InitGame: US_Setup\n");
+  BM_LOG("[DIAG] InitGame: US_Setup");
   US_Setup();
 
   US_SetLoadSaveHooks(&LoadTheGame, &SaveTheGame, &ResetGame);
@@ -252,6 +251,11 @@ void InitGame(void)
 void Quit(char *error)
 {
   Uint16 finscreen;
+
+  if (error && *error)
+    BM_LOG("Quit: %s", error);
+  else
+    BM_LOG("Quit: (normal exit)");
 
   if (!error)
   {
@@ -346,7 +350,7 @@ void CheckMemory(void)
   ShutdownId();
 
 #ifdef SDL_PORT
-  fprintf(stderr, "Not enough memory to run Bio Menace!\n");
+  BM_LOG("Not enough memory to run Bio Menace!");
 #else
   movedata(finscreen,7,0xb800,0,3780);
   textmode(C80);
@@ -405,7 +409,7 @@ void DemoLoop(void)
   playstate = ex_stillplaying;
   while (1)
   {
-    fprintf(stderr, "[DIAG] DemoLoop state=%d\n", state);
+    BM_LOG("[DIAG] DemoLoop state=%d", state);
     switch (state++)
     {
     case 0:
@@ -512,22 +516,19 @@ static void CheckCutFile(void)
     close(handle);
     return;
   }
-  puts("Combining "FILE_GR1" and "FILE_GR2" into "FILE_GRAPH"...");
+  BM_LOG("Combining "FILE_GR1" and "FILE_GR2" into "FILE_GRAPH"...");
   if (rename(FILE_GR1, FILE_GRAPH) == -1)
   {
-    puts("Can't rename "FILE_GR1"!");
-    exit(1);
+    Quit("Can't rename "FILE_GR1"!");
   }
   if ( (ohandle = open(FILE_GRAPH, O_BINARY|O_APPEND|O_WRONLY)) == -1)
   {
-    puts("Can't open "FILE_GRAPH"!");
-    exit(1);
+    Quit("Can't open "FILE_GRAPH"!");
   }
   lseek(ohandle, 0, SEEK_END);
   if ( (ihandle = open(FILE_GR2, O_BINARY|O_RDONLY)) == -1)
   {
-    puts("Can't find "FILE_GR2"!");
-    exit(1);
+    Quit("Can't find "FILE_GR2"!");
   }
   size = filelength(ihandle);
   buffer = farmalloc(32000);
@@ -666,27 +667,24 @@ int main(int argc, char *argv[])
   copyprotectionfailed = CheckCopyProtection();
 #endif
 
-#if !(SDL_PORT && defined(__ANDROID__))
-  // CheckCutFile() combines split game data files — a DOS-era artifact.
-  // On Android it must be skipped because it calls exit(1) on failure,
-  // which would kill the process while SDL's VsyncReceiver/GL threads
-  // are still running (causing a destroyed-mutex SIGABRT).
+  // CheckCutFile() combines split game data files (EGA1.BM1 + EGA2.BM1
+  // into EGAGRAPH.BM1).  Error paths now use Quit() instead of exit(1),
+  // which is safe on all platforms including Android.
   CheckCutFile();
-#endif
 
   storedemo = false;
 
-  fprintf(stderr, "[DIAG] InitGame starting...\n");
+  BM_LOG("[DIAG] InitGame starting...");
   InitGame();
-  fprintf(stderr, "[DIAG] InitGame done, checking memory...\n");
+  BM_LOG("[DIAG] InitGame done, checking memory...");
   CheckMemory();
-  fprintf(stderr, "[DIAG] CheckMemory passed\n");
+  BM_LOG("[DIAG] CheckMemory passed");
 
   gamestate.var44 = 0;
 
   _setcursortype(_NORMALCURSOR);
 
-  fprintf(stderr, "[DIAG] Entering DemoLoop\n");
+  BM_LOG("[DIAG] Entering DemoLoop");
   DemoLoop();
   Quit("Demo loop exited???");
 }
