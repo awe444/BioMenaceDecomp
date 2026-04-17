@@ -96,6 +96,9 @@ static inline void movedata(unsigned srcseg, unsigned srcoff,
 #ifndef S_IREAD
 #define S_IREAD S_IRUSR
 #endif
+#ifndef S_IWRITE
+#define S_IWRITE S_IWUSR
+#endif
 
 /* Borland filelength() */
 static inline long filelength(int fd)

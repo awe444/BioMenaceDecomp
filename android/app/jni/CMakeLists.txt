@@ -82,4 +82,7 @@ target_compile_definitions(main PRIVATE
 target_compile_options(main PRIVATE
     -Wno-multichar
     -Wno-pointer-sign
+    -Wno-incompatible-function-pointer-types
+    -Wno-implicit-function-declaration
+    -Wno-implicit-int
 )
