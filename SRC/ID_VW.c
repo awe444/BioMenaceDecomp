@@ -756,13 +756,12 @@ void VW_Vlin(unsigned yl, unsigned yh, unsigned x, unsigned color)
 
     for (y = yl; y <= yh; y++)
     {
-        unsigned wrappedofs = VRAM_WRAP(byteofs);
         for (plane = 0; plane < 4; plane++)
         {
             if (color & (1 << plane))
-                screenbuffer[plane][wrappedofs] |= bitmask;
+                screenbuffer[plane][VRAM_WRAP(byteofs)] |= bitmask;
             else
-                screenbuffer[plane][wrappedofs] &= ~bitmask;
+                screenbuffer[plane][VRAM_WRAP(byteofs)] &= ~bitmask;
         }
         byteofs += linewidth;
     }
