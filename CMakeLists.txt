@@ -22,6 +22,7 @@ set(ENGINE_SOURCES
     SRC/ID_US_A.c
     SRC/ID_TEXTSCR.c
     SRC/opl.c
+    SRC/opl/opl3.c
 )
 
 set(GAME_SOURCES
@@ -45,6 +46,7 @@ add_executable(bmenace1 ${ENGINE_SOURCES} ${GAME_SOURCES})
 
 target_include_directories(bmenace1 PRIVATE
     ${CMAKE_SOURCE_DIR}/SRC
+    ${CMAKE_SOURCE_DIR}/SRC/opl
     ${SDL2_INCLUDE_DIRS}
 )
 
