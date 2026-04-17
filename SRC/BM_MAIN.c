@@ -49,9 +49,13 @@
  * we use setjmp/longjmp to unwind back into main()'s frame, let it call
  * SDL_Quit(), and then return normally.  SDL's Java side then calls
  * Activity.finish() through the standard lifecycle.
+ *
+ * These variables are only accessed from the SDL_main thread (the native
+ * thread that runs main/Quit), so no synchronization is needed.
  */
 static jmp_buf android_quit_jmpbuf;
 static int     android_quit_code;
+static int     android_quit_jmpbuf_valid;
 #endif
 
 /*
@@ -273,8 +277,12 @@ void Quit(char *error)
       execlp("TED5.EXE", "TED5.EXE", "/LAUNCH", NULL);
     }
 #if SDL_PORT && defined(__ANDROID__)
-    android_quit_code = 1;
-    longjmp(android_quit_jmpbuf, 1);
+    if (android_quit_jmpbuf_valid)
+    {
+      android_quit_code = 1;
+      longjmp(android_quit_jmpbuf, 1);
+    }
+    SDL_Quit();
 #endif
     exit(1);
   }
@@ -289,8 +297,12 @@ void Quit(char *error)
   }
 
 #if SDL_PORT && defined(__ANDROID__)
-  android_quit_code = 0;
-  longjmp(android_quit_jmpbuf, 1);
+  if (android_quit_jmpbuf_valid)
+  {
+    android_quit_code = 0;
+    longjmp(android_quit_jmpbuf, 1);
+  }
+  SDL_Quit();
 #endif
   exit(0);
 }
@@ -647,6 +659,7 @@ int main(int argc, char *argv[])
     SDL_Quit();
     return android_quit_code;
   }
+  android_quit_jmpbuf_valid = 1;
 #endif
 
 #ifndef SHAREWARE
