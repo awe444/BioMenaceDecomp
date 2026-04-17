@@ -281,6 +281,7 @@ void  VW_FadeDown(void);
 void  VW_SetAtrReg (int reg, int value);
 
 void  VW_Present(void);
+void  VW_ToggleFullscreen(void);
 
 //
 // block primitives

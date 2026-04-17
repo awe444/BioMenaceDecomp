@@ -52,7 +52,7 @@ extern char **_argv;
 #define BUFFWIDTH       50
 #define BUFFHEIGHT      32
 
-#define SCREEN_SCALE    3
+#define SCREEN_SCALE    1
 #define SCREEN_W        320
 #define SCREEN_H        200
 
@@ -131,6 +131,7 @@ static unsigned cursorspot;
 static SDL_Window *sdl_window;
 static SDL_Renderer *sdl_renderer;
 static SDL_Texture *sdl_texture;
+static int sdl_fullscreen;
 
 // Software EGA framebuffer: 4 bitplanes
 static uint8_t screenbuffer[4][EGA_VRAM_SIZE];
@@ -365,6 +366,9 @@ static void VWL_SetupSDLWindow(void)
             Quit("SDL video init failed!");
     }
 
+    // Ensure nearest-neighbor (point) filtering for crisp pixel art
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+
     // Try to reuse the text screen window (avoids creating a second window)
 #ifdef SDL_PORT
     sdl_window = (SDL_Window *)TXT_TransferWindow();
@@ -405,6 +409,40 @@ static void VWL_SetupSDLWindow(void)
         SCREEN_W, SCREEN_H);
     if (!sdl_texture)
         Quit("SDL_CreateTexture failed!");
+
+    sdl_fullscreen = 0;
+}
+
+//===========================================================================
+
+/*
+=========================
+=
+= VW_ToggleFullscreen - Toggle between windowed and fullscreen mode.
+=   In fullscreen, uses nearest-neighbor integer scaling.
+=
+=========================
+*/
+
+void VW_ToggleFullscreen(void)
+{
+    if (!sdl_window)
+        return;
+
+    sdl_fullscreen = !sdl_fullscreen;
+
+    if (sdl_fullscreen)
+    {
+        SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_RenderSetIntegerScale(sdl_renderer, SDL_TRUE);
+    }
+    else
+    {
+        SDL_SetWindowFullscreen(sdl_window, 0);
+        SDL_RenderSetIntegerScale(sdl_renderer, SDL_FALSE);
+        SDL_SetWindowSize(sdl_window, SCREEN_W * SCREEN_SCALE, SCREEN_H * SCREEN_SCALE);
+        SDL_SetWindowPosition(sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
 }
 
 //===========================================================================
@@ -479,10 +517,10 @@ void VW_SetScreenMode (int grmode)
 char colors[7][17]=
 {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
  {0,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,0},
- {0,0,0,0,0,0,0,0,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f,0},
- {0,1,2,3,4,5,6,7,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f,0},
- {0,1,2,3,4,5,6,7,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0},
- {0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f}};
+ {0,0,0,0,0,0,0,0,0x38,0x39,0x3a,0x3b,0x3c,0x3d,0x3e,0x3f,0},
+ {0,1,2,3,4,5,6,7,0x38,0x39,0x3a,0x3b,0x3c,0x3d,0x3e,0x3f,0},
+ {0,1,2,3,4,5,6,7,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0},
+ {0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f,0x3f}};
 
 
 void VW_ColorBorder (int color)
@@ -495,15 +533,15 @@ void VW_SetPalette(byte *palette)
     byte    p;
     word    i;
 
-    for (i = 0;i < 15;i++)
+    for (i = 0;i < 16;i++)
     {
         p = palette[i];
         colors[0][i] = 0;
         colors[1][i] = (p > 0x10)? (p & 0x0f) : 0;
         colors[2][i] = (p > 0x10)? p : 0;
         colors[3][i] = p;
-        colors[4][i] = (p > 0x10)? 0x1f : p;
-        colors[5][i] = 0x1f;
+        colors[4][i] = (p > 0x10)? 0x3f : p;
+        colors[5][i] = 0x3f;
     }
 }
 
