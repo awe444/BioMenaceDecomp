@@ -300,12 +300,12 @@ void PicturePause(void)
   VW_SetLineWidth(40);
   VW_SetScreen(0, 0);
 
-  if (source < 0x10000l-200*64)
+  if (source < 0x10000l-240*64)
   {
   //
   // copy top line first
   //
-    for (y=0; y<200; y++)
+    for (y=0; y<240; y++)
     {
       VW_ScreenToScreen(source+y*64, y*40, 40, 1);
     }
@@ -315,7 +315,7 @@ void PicturePause(void)
   //
   // copy bottom line first
   //
-    for (y=199; y>=0; y--)
+    for (y=239; y>=0; y--)
     {
       VW_ScreenToScreen(source+y*64, y*40, 40, 1);
     }

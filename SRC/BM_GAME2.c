@@ -406,7 +406,7 @@ void StatusWindow(void)
   WindowX = 0;
   WindowW = 320;
   WindowY = 0;
-  WindowH = 200;
+  WindowH = 240;
   DrawStatusWindow();
   VW_UpdateScreen();
   IN_ClearKeysDown();
@@ -428,7 +428,7 @@ void CenterActor(register objtype *ob)
   register Uint16 orgx;
   Uint16 orgy;
 
-  centerlevel = 140;
+  centerlevel = 160;
   if (ob->x < 152*PIXGLOBAL)
   {
     orgx = 0;
@@ -438,13 +438,13 @@ void CenterActor(register objtype *ob)
     orgx = ob->x - 152*PIXGLOBAL;
   }
 
-  if (ob->bottom < 140*PIXGLOBAL)
+  if (ob->bottom < 160*PIXGLOBAL)
   {
     orgy = 0;
   }
   else
   {
-    orgy = ob->bottom - 140*PIXGLOBAL;
+    orgy = ob->bottom - 160*PIXGLOBAL;
   }
 
   if (!scorescreenkludge)
@@ -512,9 +512,9 @@ void ScrollScreen(objtype *ob)
   //
   // fallen off bottom of world?
   //
-  if (ob->bottom > originymax + 13*TILEGLOBAL && ob->health > 0)
+  if (ob->bottom > originymax + 15*TILEGLOBAL && ob->health > 0)
   {
-    ob->y -= ob->bottom - (originymax + 13*TILEGLOBAL);
+    ob->y -= ob->bottom - (originymax + 15*TILEGLOBAL);
     godmode = false;
     DamagePlayer(ob, 50);
     return;
@@ -533,9 +533,9 @@ void ScrollScreen(objtype *ob)
 
   if (Keyboard[sc_PgUp] || (Keyboard[sc_RShift] && c.yaxis == -1))
   {
-    if (centerlevel+tics > 157)
+    if (centerlevel+tics > 177)
     {
-      pix = 157-centerlevel;
+      pix = 177-centerlevel;
     }
     else
     {
@@ -546,9 +546,9 @@ void ScrollScreen(objtype *ob)
   }
   else if (Keyboard[sc_PgDn] || (Keyboard[sc_RShift] && c.yaxis == 1))
   {
-    if (centerlevel-tics < 43)
+    if (centerlevel-tics < 63)
     {
-      pix = centerlevel + -43;
+      pix = centerlevel + -63;
     }
     else
     {
@@ -606,7 +606,7 @@ void ScrollScreen(objtype *ob)
   }
   else
   {
-    centerlevel = 140;
+    centerlevel = 160;
   }
 
 noscroll:
@@ -615,7 +615,7 @@ noscroll:
   {
     yscroll += pix;
   }
-  pix = (ob->bottom+32*PIXGLOBAL)-(originyglobal+yscroll+200*PIXGLOBAL);
+  pix = (ob->bottom+32*PIXGLOBAL)-(originyglobal+yscroll+240*PIXGLOBAL);
   if (pix > 0)
   {
     yscroll += pix;

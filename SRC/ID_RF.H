@@ -61,7 +61,7 @@
 #define P_T_SHIFT     4   // pixels >> ?? = tile
 
 #define PORTTILESWIDE   21      // all drawing takes place inside a
-#define PORTTILESHIGH   14    // non displayed port of this size
+#define PORTTILESHIGH   16    // non displayed port of this size
 
 //#define PORTGLOBALWIDE    (21*TILEGLOBAL)
 //#define PORTGLOBALHIGH    (14*TILEGLOBAL)
