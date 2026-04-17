@@ -1343,18 +1343,29 @@ void RFL_BoundNewOrigin (unsigned orgx,unsigned orgy)
   for (check=0;check<hscrollblocks;check++)
   {
     edge = hscrolledge[check];
-    if (edge>=originytile && edge <=originytile+6)
+    if (edge>=originytile && edge <=(int)originytile+PORTTILESHIGH/2-1)
     {
       orgy = (edge+1)*TILEGLOBAL;
       break;
     }
-    if (edge>=originytile+7 && edge <=originytile+13)
+    if (edge>=(int)originytile+PORTTILESHIGH/2 && edge <=(int)originytile+PORTTILESHIGH-1)
     {
-      orgy = (edge-13)*TILEGLOBAL;
+      orgy = (edge-(PORTTILESHIGH-1))*TILEGLOBAL;
       break;
     }
   }
 
+//
+// ensure the port buffer fits within the map after scroll block adjustments
+//
+  {
+    unsigned maxytile = (mapheight > PORTTILESHIGH) ? (mapheight - PORTTILESHIGH) : 0;
+    unsigned maxxtile = (mapwidth > PORTTILESWIDE) ? (mapwidth - PORTTILESWIDE) : 0;
+    if ((orgy>>G_T_SHIFT) > maxytile)
+      orgy = maxytile * TILEGLOBAL;
+    if ((orgx>>G_T_SHIFT) > maxxtile)
+      orgx = maxxtile * TILEGLOBAL;
+  }
 
   RFL_CalcOriginStuff (orgx,orgy);
 }
