@@ -257,6 +257,12 @@ void Quit(char *error)
       getch();
       execlp("TED5.EXE", "TED5.EXE", "/LAUNCH", NULL);
     }
+#if SDL_PORT && defined(__ANDROID__)
+    // On Android, SDL2 runs main() in a separate thread.  Calling exit()
+    // without tearing down SDL first would destroy mutexes while the
+    // VsyncReceiver and GL threads are still running, causing a SIGABRT.
+    SDL_Quit();
+#endif
     exit(1);
   }
 
@@ -269,6 +275,9 @@ void Quit(char *error)
     gotoxy(1, 24);
   }
 
+#if SDL_PORT && defined(__ANDROID__)
+  SDL_Quit();
+#endif
   exit(0);
 }
 
@@ -620,7 +629,9 @@ int main(int argc, char *argv[])
   copyprotectionfailed = CheckCopyProtection();
 #endif
 
+#if !(SDL_PORT && defined(__ANDROID__))
   CheckCutFile();
+#endif
 
   storedemo = false;
 

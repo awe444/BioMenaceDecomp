@@ -26,8 +26,8 @@ public class BioMenaceActivity extends SDLActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        copyAssetsIfNeeded();
         super.onCreate(savedInstanceState);
+        copyAssetsIfNeeded();
     }
 
     @Override
