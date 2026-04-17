@@ -59,6 +59,11 @@ extern char **_argv;
 // EGA VRAM size per plane (original hardware had 64KB per plane)
 #define EGA_VRAM_SIZE   0x10000u
 
+// On DOS, unsigned was 16-bit so VRAM address arithmetic naturally wrapped
+// at 64KB.  On modern platforms unsigned is 32-bit, so we must wrap
+// explicitly to emulate the circular EGA VRAM.
+#define VRAM_WRAP(ofs)  ((ofs) & (EGA_VRAM_SIZE - 1))
+
 /*
 =============================================================================
 
@@ -247,16 +252,12 @@ void VW_Present(void)
             int srcx = x + pelpan_offset;
             int srcbyte = (srcx >> 3);
             int srcbit = 7 - (srcx & 7);
-            unsigned planeofs = displayofs + ylookup[y] + srcbyte;
+            unsigned planeofs = VRAM_WRAP(displayofs + ylookup[y] + srcbyte);
 
-            unsigned color = 0;
-            if (planeofs < EGA_VRAM_SIZE)
-            {
-                color = ((screenbuffer[0][planeofs] >> srcbit) & 1)
+            unsigned color = ((screenbuffer[0][planeofs] >> srcbit) & 1)
                       | (((screenbuffer[1][planeofs] >> srcbit) & 1) << 1)
                       | (((screenbuffer[2][planeofs] >> srcbit) & 1) << 2)
                       | (((screenbuffer[3][planeofs] >> srcbit) & 1) << 3);
-            }
 
             {
                 uint8_t *p = pixels + y * pitch + x * 4;
@@ -719,12 +720,9 @@ cardtype VW_VideoID (void)
 
 void VW_Plot(unsigned x, unsigned y, unsigned color)
 {
-    unsigned byteofs = bufferofs + ylookup[y] + (x >> 3);
+    unsigned byteofs = VRAM_WRAP(bufferofs + ylookup[y] + (x >> 3));
     unsigned bitmask = 0x80 >> (x & 7);
     int plane;
-
-    if (byteofs >= EGA_VRAM_SIZE)
-        return;
 
     for (plane = 0; plane < 4; plane++)
     {
@@ -758,15 +756,13 @@ void VW_Vlin(unsigned yl, unsigned yh, unsigned x, unsigned color)
 
     for (y = yl; y <= yh; y++)
     {
-        if (byteofs < EGA_VRAM_SIZE)
+        unsigned wrappedofs = VRAM_WRAP(byteofs);
+        for (plane = 0; plane < 4; plane++)
         {
-            for (plane = 0; plane < 4; plane++)
-            {
-                if (color & (1 << plane))
-                    screenbuffer[plane][byteofs] |= bitmask;
-                else
-                    screenbuffer[plane][byteofs] &= ~bitmask;
-            }
+            if (color & (1 << plane))
+                screenbuffer[plane][wrappedofs] |= bitmask;
+            else
+                screenbuffer[plane][wrappedofs] &= ~bitmask;
         }
         byteofs += linewidth;
     }
@@ -801,34 +797,28 @@ void VW_Hlin(unsigned xl, unsigned xh, unsigned y, unsigned color)
     maskleft = leftmask[xl&7];
     maskright = rightmask[xh&7];
 
-    dest = bufferofs + ylookup[y] + xlb;
+    dest = VRAM_WRAP(bufferofs + ylookup[y] + xlb);
 
     if (xlb == xhb)
     {
         uint8_t mask = maskleft & maskright;
-        if (dest < EGA_VRAM_SIZE)
+        for (plane = 0; plane < 4; plane++)
         {
-            for (plane = 0; plane < 4; plane++)
-            {
-                if (color & (1 << plane))
-                    screenbuffer[plane][dest] |= mask;
-                else
-                    screenbuffer[plane][dest] &= ~mask;
-            }
+            if (color & (1 << plane))
+                screenbuffer[plane][dest] |= mask;
+            else
+                screenbuffer[plane][dest] &= ~mask;
         }
         return;
     }
 
     // Left edge
-    if (dest < EGA_VRAM_SIZE)
+    for (plane = 0; plane < 4; plane++)
     {
-        for (plane = 0; plane < 4; plane++)
-        {
-            if (color & (1 << plane))
-                screenbuffer[plane][dest] |= maskleft;
-            else
-                screenbuffer[plane][dest] &= ~maskleft;
-        }
+        if (color & (1 << plane))
+            screenbuffer[plane][dest] |= maskleft;
+        else
+            screenbuffer[plane][dest] &= ~maskleft;
     }
 
     // Middle full bytes
@@ -839,31 +829,26 @@ void VW_Hlin(unsigned xl, unsigned xh, unsigned y, unsigned color)
         unsigned i;
         for (i = 0; i < mid; i++, pos++)
         {
-            if (pos < EGA_VRAM_SIZE)
+            unsigned wpos = VRAM_WRAP(pos);
+            for (plane = 0; plane < 4; plane++)
             {
-                for (plane = 0; plane < 4; plane++)
-                {
-                    if (color & (1 << plane))
-                        screenbuffer[plane][pos] = 0xFF;
-                    else
-                        screenbuffer[plane][pos] = 0x00;
-                }
+                if (color & (1 << plane))
+                    screenbuffer[plane][wpos] = 0xFF;
+                else
+                    screenbuffer[plane][wpos] = 0x00;
             }
         }
     }
 
     // Right edge
     {
-        unsigned rpos = dest + (xhb - xlb);
-        if (rpos < EGA_VRAM_SIZE)
+        unsigned rpos = VRAM_WRAP(dest + (xhb - xlb));
+        for (plane = 0; plane < 4; plane++)
         {
-            for (plane = 0; plane < 4; plane++)
-            {
-                if (color & (1 << plane))
-                    screenbuffer[plane][rpos] |= maskright;
-                else
-                    screenbuffer[plane][rpos] &= ~maskright;
-            }
+            if (color & (1 << plane))
+                screenbuffer[plane][rpos] |= maskright;
+            else
+                screenbuffer[plane][rpos] &= ~maskright;
         }
     }
 }
@@ -928,8 +913,7 @@ void VW_DrawTile8(unsigned x, unsigned y, unsigned tile)
         unsigned pos = dest;
         for (row = 0; row < 8; row++)
         {
-            if (pos < EGA_VRAM_SIZE)
-                screenbuffer[plane][pos] = *source;
+            screenbuffer[plane][VRAM_WRAP(pos)] = *source;
             source++;
             pos += linewidth;
         }
@@ -969,11 +953,9 @@ void VW_MaskBlock(memptr segm, unsigned ofs, unsigned dest,
         {
             for (col = 0; col < wide; col++)
             {
-                if (screenofs + col < EGA_VRAM_SIZE)
-                {
-                    screenbuffer[plane][screenofs + col] =
-                        (screenbuffer[plane][screenofs + col] & mp[col]) | dp[col];
-                }
+                unsigned wofs = VRAM_WRAP(screenofs + col);
+                screenbuffer[plane][wofs] =
+                    (screenbuffer[plane][wofs] & mp[col]) | dp[col];
             }
             mp += wide;
             dp += wide;
@@ -1006,14 +988,11 @@ void VW_InverseMask(memptr segm, unsigned ofs, unsigned dest,
     {
         for (col = 0; col < wide; col++)
         {
-            unsigned pos = dest + col;
+            unsigned pos = VRAM_WRAP(dest + col);
             uint8_t val = ~(*source);
             source++;
-            if (pos < EGA_VRAM_SIZE)
-            {
-                for (plane = 0; plane < 4; plane++)
-                    screenbuffer[plane][pos] |= val;
-            }
+            for (plane = 0; plane < 4; plane++)
+                screenbuffer[plane][pos] |= val;
         }
         dest += linewidth;
     }
@@ -1044,11 +1023,7 @@ void VW_ScreenToScreen(unsigned source, unsigned dest, unsigned wide, unsigned h
         {
             for (col = 0; col < wide; col++)
             {
-                if (dofs + col < EGA_VRAM_SIZE &&
-                    sofs + col < EGA_VRAM_SIZE)
-                {
-                    screenbuffer[plane][dofs + col] = screenbuffer[plane][sofs + col];
-                }
+                screenbuffer[plane][VRAM_WRAP(dofs + col)] = screenbuffer[plane][VRAM_WRAP(sofs + col)];
             }
             sofs += linewidth;
             dofs += linewidth;
@@ -1081,8 +1056,7 @@ void VW_MemToScreen(memptr source, unsigned dest, unsigned width, unsigned heigh
         {
             for (col = 0; col < width; col++)
             {
-                if (screenofs + col < EGA_VRAM_SIZE)
-                    screenbuffer[plane][screenofs + col] = *src;
+                screenbuffer[plane][VRAM_WRAP(screenofs + col)] = *src;
                 src++;
             }
             screenofs += linewidth;
@@ -1115,10 +1089,7 @@ void VW_ScreenToMem(unsigned source, memptr dest, unsigned width, unsigned heigh
         {
             for (col = 0; col < width; col++)
             {
-                if (screenofs + col < EGA_VRAM_SIZE)
-                    *dst = screenbuffer[plane][screenofs + col];
-                else
-                    *dst = 0;
+                *dst = screenbuffer[plane][VRAM_WRAP(screenofs + col)];
                 dst++;
             }
             screenofs += linewidth;
@@ -1329,33 +1300,30 @@ static void BufferToScreen(uint8_t *buf, unsigned bwidth, unsigned bheight,
         for (col = 0; col < bwidth; col++)
         {
             uint8_t val = buf[row * BUFFWIDTH + col];
-            unsigned pos = scrofs + col;
+            unsigned pos = VRAM_WRAP(scrofs + col);
 
-            if (pos < EGA_VRAM_SIZE)
+            if (drawmode == 8)
             {
-                if (drawmode == 8)
+                // AND mode
+                for (plane = 0; plane < 4; plane++)
+                    screenbuffer[plane][pos] &= val;
+            }
+            else if (drawmode == 16)
+            {
+                // OR mode
+                for (plane = 0; plane < 4; plane++)
                 {
-                    // AND mode
-                    for (plane = 0; plane < 4; plane++)
-                        screenbuffer[plane][pos] &= val;
+                    if (color & (1 << plane))
+                        screenbuffer[plane][pos] |= val;
                 }
-                else if (drawmode == 16)
+            }
+            else
+            {
+                // XOR mode (default, 0x18/24)
+                for (plane = 0; plane < 4; plane++)
                 {
-                    // OR mode
-                    for (plane = 0; plane < 4; plane++)
-                    {
-                        if (color & (1 << plane))
-                            screenbuffer[plane][pos] |= val;
-                    }
-                }
-                else
-                {
-                    // XOR mode (default, 0x18/24)
-                    for (plane = 0; plane < 4; plane++)
-                    {
-                        if (color & (1 << plane))
-                            screenbuffer[plane][pos] ^= val;
-                    }
+                    if (color & (1 << plane))
+                        screenbuffer[plane][pos] ^= val;
                 }
             }
         }
@@ -1684,11 +1652,7 @@ static void VWL_UpdateScreenBlocks (void)
                     unsigned drow = screenstart + row * linewidth;
                     for (col = 0; col < bytewidth; col++)
                     {
-                        if (drow + col < EGA_VRAM_SIZE &&
-                            srow + col < EGA_VRAM_SIZE)
-                        {
-                            screenbuffer[plane][drow + col] = screenbuffer[plane][srow + col];
-                        }
+                        screenbuffer[plane][VRAM_WRAP(drow + col)] = screenbuffer[plane][VRAM_WRAP(srow + col)];
                     }
                 }
             }
