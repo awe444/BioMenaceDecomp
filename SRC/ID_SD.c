@@ -146,37 +146,31 @@ static  long      sqHackTime;
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//  SD_UpdateTimeCount() - Updates TimeCount.
-//    When SDL audio is active, TimeCount is driven by the audio callback
-//    at a precise 70Hz rate. This function is a no-op in that case.
-//    When audio is not yet started, falls back to SDL_GetTicks() timing.
+//  SD_UpdateTimeCount() - Updates TimeCount based on SDL_GetTicks() to
+//    emulate the original 70Hz timer interrupt.
+//    Must be called regularly from the main thread (e.g. via IN_PumpEvents)
+//    because game loops spin on TimeCount for frame timing.
 //
 ///////////////////////////////////////////////////////////////////////////
 void
 SD_UpdateTimeCount(void)
 {
-  if (sdl_audioStarted)
-    return;   // Audio callback handles TimeCount at 70Hz
+  Uint32  now = SDL_GetTicks();
+  Uint32  elapsed_ms = now - sdl_lastTicks;
+  Uint32  total, ticks;
 
-  // Fallback for before audio is initialized
-  {
-    Uint32  now = SDL_GetTicks();
-    Uint32  elapsed_ms = now - sdl_lastTicks;
-    Uint32  total, ticks;
+  sdl_lastTicks = now;
 
-    sdl_lastTicks = now;
+  // Convert elapsed milliseconds to 70Hz ticks with remainder tracking
+  total = elapsed_ms * 70 + sdl_tickRemainder;
+  ticks = total / 1000;
+  sdl_tickRemainder = total % 1000;
 
-    // Convert elapsed milliseconds to 70Hz ticks with remainder tracking
-    total = elapsed_ms * 70 + sdl_tickRemainder;
-    ticks = total / 1000;
-    sdl_tickRemainder = total % 1000;
+  TimeCount += ticks;
+  LocalTime += ticks;
 
-    TimeCount += ticks;
-    LocalTime += ticks;
-
-    if (ticks > 0 && SoundUserHook)
-      SoundUserHook();
-  }
+  if (ticks > 0 && SoundUserHook)
+    SoundUserHook();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -589,17 +583,6 @@ SD_SDL_AudioCB(void *userdata, Uint8 *stream, int len)
       if (MusicMode == smm_AdLib)
         SDL_ALService();
 
-      // Update TimeCount (70Hz = every other 140Hz tick)
-      HackCount++;
-      if (HackCount >= 2)
-      {
-        HackCount = 0;
-        TimeCount++;
-        LocalTime++;
-        if (SoundUserHook)
-          SoundUserHook();
-      }
-
       sdl_sampleCounter += sdl_samplesPerTick;
     }
 
@@ -650,6 +633,12 @@ SDL_StartAudio(void)
   if (sdl_audioStarted)
     return;
 
+  if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
+  {
+    fprintf(stderr, "SD: SDL_InitSubSystem(AUDIO) failed: %s\n", SDL_GetError());
+    return;
+  }
+
   OPL_Init(SD_SAMPLE_RATE);
 
   memset(&desired, 0, sizeof(desired));
@@ -686,6 +675,8 @@ SDL_StopAudio(void)
   SDL_CloseAudioDevice(sdl_audioDevice);
   sdl_audioDevice = 0;
   sdl_audioStarted = false;
+
+  SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
   OPL_Shutdown();
 }
