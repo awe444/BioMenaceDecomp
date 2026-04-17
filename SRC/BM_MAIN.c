@@ -630,6 +630,10 @@ int main(int argc, char *argv[])
 #endif
 
 #if !(SDL_PORT && defined(__ANDROID__))
+  // CheckCutFile() combines split game data files — a DOS-era artifact.
+  // On Android it must be skipped because it calls exit(1) on failure,
+  // which would kill the process while SDL's VsyncReceiver/GL threads
+  // are still running (causing a destroyed-mutex SIGABRT).
   CheckCutFile();
 #endif
 
