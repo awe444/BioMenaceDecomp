@@ -396,7 +396,7 @@ void RF_NewMap (void)
 
 //
 // the y max value clips off the bottom half of a tile so a map that is
-// 13 + MAPBORDER*2 tile high will not scroll at all vertically
+// SCREENTILESHIGH + MAPBORDER*2 tile high will not scroll at all vertically
 //
   originxmax = (mapwidth-MAPBORDER-SCREENTILESWIDE)*TILEGLOBAL;
   originymax = (mapheight-MAPBORDER-SCREENTILESHIGH)*TILEGLOBAL;
@@ -404,6 +404,25 @@ void RF_NewMap (void)
     originxmax=originxmin;
   if (originymax<originymin)
     originymax=originymin;
+
+//
+// ensure the full port tile buffer fits within the map vertically;
+// maps designed for a smaller viewport may not have enough rows
+//
+  if (originymin + PORTTILESHIGH * TILEGLOBAL > mapheight * TILEGLOBAL)
+  {
+    originymin = (mapheight > PORTTILESHIGH) ?
+      (mapheight - PORTTILESHIGH) * TILEGLOBAL : 0;
+    if (originymax < originymin)
+      originymax = originymin;
+  }
+  if (originxmin + PORTTILESWIDE * TILEGLOBAL > mapwidth * TILEGLOBAL)
+  {
+    originxmin = (mapwidth > PORTTILESWIDE) ?
+      (mapwidth - PORTTILESWIDE) * TILEGLOBAL : 0;
+    if (originxmax < originxmin)
+      originxmax = originxmin;
+  }
 
 //
 // clear out the lists
