@@ -37,6 +37,21 @@
 
 #if SDL_PORT && defined(__ANDROID__)
 #include <SDL.h>
+#include <setjmp.h>
+/*
+ * On Android, SDL2 runs main() (== SDL_main) in a dedicated native thread.
+ * Calling exit() from *any* thread kills the entire process, including
+ * Android system threads (RenderThread, VsyncReceiver, Binder, …) that may
+ * be mid-operation — resulting in a SIGSEGV or destroyed-mutex SIGABRT.
+ *
+ * The only safe way to terminate is to **return from main()**.  Because
+ * Quit() is called from deep call chains and is not expected to return,
+ * we use setjmp/longjmp to unwind back into main()'s frame, let it call
+ * SDL_Quit(), and then return normally.  SDL's Java side then calls
+ * Activity.finish() through the standard lifecycle.
+ */
+static jmp_buf android_quit_jmpbuf;
+static int     android_quit_code;
 #endif
 
 /*
@@ -258,10 +273,8 @@ void Quit(char *error)
       execlp("TED5.EXE", "TED5.EXE", "/LAUNCH", NULL);
     }
 #if SDL_PORT && defined(__ANDROID__)
-    // On Android, SDL2 runs main() in a separate thread.  Calling exit()
-    // without tearing down SDL first would destroy mutexes while the
-    // VsyncReceiver and GL threads are still running, causing a SIGABRT.
-    SDL_Quit();
+    android_quit_code = 1;
+    longjmp(android_quit_jmpbuf, 1);
 #endif
     exit(1);
   }
@@ -276,7 +289,8 @@ void Quit(char *error)
   }
 
 #if SDL_PORT && defined(__ANDROID__)
-  SDL_Quit();
+  android_quit_code = 0;
+  longjmp(android_quit_jmpbuf, 1);
 #endif
   exit(0);
 }
@@ -622,6 +636,16 @@ int main(int argc, char *argv[])
     const char *path = SDL_AndroidGetInternalStoragePath();
     if (path)
       chdir(path);
+  }
+
+  /* Register a return point for Quit().  On Android we must never call
+     exit() because it kills system threads (RenderThread, etc.) that are
+     still running.  Quit() does a longjmp back here instead, and we
+     return normally so SDL's Java side can finish the Activity. */
+  if (setjmp(android_quit_jmpbuf) != 0)
+  {
+    SDL_Quit();
+    return android_quit_code;
   }
 #endif
 
