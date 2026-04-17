@@ -19,7 +19,7 @@
 #define CHAR_H 16
 #define SCREEN_W (TXT_COLS * CHAR_W)   /* 640 */
 #define SCREEN_H (TXT_ROWS * CHAR_H)   /* 400 */
-#define SCALE 2
+#define SCALE 1
 
 /* ========================================================================
  * DOS 16-color text mode palette (CGA/EGA/VGA standard)

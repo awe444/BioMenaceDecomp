@@ -290,6 +290,14 @@ IN_PumpEvents(void)
         break;
       }
 
+      // ALT+Enter toggles fullscreen
+      if (ev.key.keysym.scancode == SDL_SCANCODE_RETURN &&
+          (ev.key.keysym.mod & KMOD_ALT))
+      {
+        VW_ToggleFullscreen();
+        break;
+      }
+
       k = INL_SDLScanCodeToDOS(ev.key.keysym.scancode);
       if (k == 0 || k >= NumCodes)
         break;
