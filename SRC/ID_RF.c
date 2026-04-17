@@ -1044,6 +1044,23 @@ void RFL_BoundScroll (int x, int y)
       }
   }
 
+//
+// safety clamp: ensure the port buffer stays within the map even if
+// scroll blocks did not fire (the larger viewport can reach the map
+// edge with fewer tiles of margin than the original 14-tile port)
+//
+  {
+    unsigned maxorgx = (mapwidth > PORTTILESWIDE) ? (mapwidth - PORTTILESWIDE) * TILEGLOBAL : 0;
+    unsigned maxorgy = (mapheight > PORTTILESHIGH) ? (mapheight - PORTTILESHIGH) * TILEGLOBAL : 0;
+    if (originxglobal < originxmin)
+      originxglobal = originxmin;
+    else if (originxglobal > maxorgx)
+      originxglobal = maxorgx;
+    if (originyglobal < originymin)
+      originyglobal = originymin;
+    else if (originyglobal > maxorgy)
+      originyglobal = maxorgy;
+  }
 
   RFL_CalcOriginStuff (originxglobal, originyglobal);
 }
