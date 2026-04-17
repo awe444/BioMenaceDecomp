@@ -205,7 +205,7 @@ void TimedPicCommand(void)
 //
   TimeCount = 0;
   while (picdelay > TimeCount)
-  ;
+    SD_UpdateTimeCount();
 
 //
 // draw pic
@@ -896,6 +896,7 @@ void HelpScreens(void)
       //
       while (!LastScan)
       {
+        IN_PumpEvents();
         if (TimeCount >= 70 && nagtimer != -1)
         {
           LastScan = sc_Bad - 1;

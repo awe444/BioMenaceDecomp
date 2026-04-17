@@ -44,7 +44,7 @@
 */
 
 boolean tedlevel;
-Uint16 tedlevelnum;
+word tedlevelnum;
 
 char str[80], str2[20];
 boolean storedemo;
@@ -159,16 +159,24 @@ void InitGame(void)
   US_TextScreen();
   _setcursortype(_NOCURSOR);
 
+  fprintf(stderr, "[DIAG] InitGame: MM_Startup\n");
   MM_Startup();
+  fprintf(stderr, "[DIAG] InitGame: VW_Startup\n");
   VW_Startup();
+  fprintf(stderr, "[DIAG] InitGame: RF_Startup\n");
   RF_Startup();
+  fprintf(stderr, "[DIAG] InitGame: IN_Startup\n");
   IN_Startup();
+  fprintf(stderr, "[DIAG] InitGame: SD_Startup\n");
   SD_Startup();
+  fprintf(stderr, "[DIAG] InitGame: US_Startup\n");
   US_Startup();
 
   US_UpdateTextScreen();
 
+  fprintf(stderr, "[DIAG] InitGame: CA_Startup\n");
   CA_Startup();
+  fprintf(stderr, "[DIAG] InitGame: US_Setup\n");
   US_Setup();
 
   US_SetLoadSaveHooks(&LoadTheGame, &SaveTheGame, &ResetGame);
@@ -192,6 +200,7 @@ void InitGame(void)
 //
 // reclaim the memory from the linked in text screen
 //
+#ifndef SDL_PORT
   segstart = FP_SEG(&introscn);
   seglength = 4000/16;
   if (FP_OFF(&introscn))
@@ -200,6 +209,7 @@ void InitGame(void)
     seglength--;
   }
   MML_UseSpace (segstart,seglength);
+#endif
 
   VW_SetScreenMode(GRMODE);
   VW_ColorBorder(BLACK);
@@ -296,11 +306,15 @@ void CheckMemory(void)
   finscreen = (Uint16)grsegs[OUTOFMEM];
   ShutdownId();
 
+#ifdef SDL_PORT
+  fprintf(stderr, "Not enough memory to run Bio Menace!\n");
+#else
   movedata(finscreen,7,0xb800,0,3780);
   textmode(C80);
   textcolor(WHITE);
   textbackground(BLACK);
   gotoxy(1,24);
+#endif
 
   exit(1);
 }
@@ -352,6 +366,7 @@ void DemoLoop(void)
   playstate = ex_stillplaying;
   while (1)
   {
+    fprintf(stderr, "[DIAG] DemoLoop state=%d\n", state);
     switch (state++)
     {
     case 0:
@@ -576,9 +591,15 @@ static boolean CheckCopyProtection(void)
 ==========================
 */
 
-void main(void)
+int _argc;
+char **_argv;
+
+int main(int argc, char *argv[])
 {
   static char *ParmStrings[] = {"sewerman", ""};
+
+  _argc = argc;
+  _argv = argv;
 
 #ifndef SHAREWARE
   copyprotectionfailed = CheckCopyProtection();
@@ -588,13 +609,17 @@ void main(void)
 
   storedemo = false;
 
+  fprintf(stderr, "[DIAG] InitGame starting...\n");
   InitGame();
+  fprintf(stderr, "[DIAG] InitGame done, checking memory...\n");
   CheckMemory();
+  fprintf(stderr, "[DIAG] CheckMemory passed\n");
 
   gamestate.var44 = 0;
 
   _setcursortype(_NORMALCURSOR);
 
+  fprintf(stderr, "[DIAG] Entering DemoLoop\n");
   DemoLoop();
   Quit("Demo loop exited???");
 }

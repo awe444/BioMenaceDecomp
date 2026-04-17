@@ -138,7 +138,7 @@ void RF_Scroll (int x, int y);
 void RF_MapToMap (unsigned srcx, unsigned srcy,
           unsigned destx, unsigned desty,
           unsigned width, unsigned height);
-void RF_MemToMap (unsigned far *source, unsigned plane,
+void RF_MemToMap (uint16_t far *source, unsigned plane,
           unsigned destx, unsigned desty,
           unsigned width, unsigned height);
 

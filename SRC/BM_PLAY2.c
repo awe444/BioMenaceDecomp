@@ -895,49 +895,19 @@ void SpawnScoreBox(void)
 
 void MemDrawChar(Sint16 char8, Uint8 far *dest, Uint16 width, Uint16 planesize)
 {
-  Uint16 source = (Uint16)grsegs[STARTTILE8];
+  Uint8 *src = (Uint8 *)grsegs[STARTTILE8];
+  unsigned srcoff = (unsigned)char8 * 32;  // 8 bytes * 4 planes = 32 bytes per char
+  int plane, row;
 
-  asm mov si,[char8]
-  asm shl si,1
-  asm shl si,1
-  asm shl si,1
-  asm shl si,1
-  asm shl si,1    // index into char 8 segment
-
-  asm mov ds,[WORD PTR source]
-  asm mov es,[WORD PTR dest+2]
-
-  asm mov cx,4    // draw four planes
-  asm mov bx,[width]
-  asm dec bx
-
-planeloop:
-
-  asm mov di,[WORD PTR dest]
-
-  asm movsb
-  asm add di,bx
-  asm movsb
-  asm add di,bx
-  asm movsb
-  asm add di,bx
-  asm movsb
-  asm add di,bx
-  asm movsb
-  asm add di,bx
-  asm movsb
-  asm add di,bx
-  asm movsb
-  asm add di,bx
-  asm movsb
-
-  asm mov ax,[planesize]
-  asm add [WORD PTR dest],ax
-
-  asm loop  planeloop
-
-  asm mov ax,ss
-  asm mov ds,ax
+  for (plane = 0; plane < 4; plane++)
+  {
+    Uint8 *dp = dest + plane * planesize;
+    for (row = 0; row < 8; row++)
+    {
+      *dp = src[srcoff++];
+      dp += width;
+    }
+  }
 }
 
 
@@ -949,13 +919,13 @@ void ShiftScore (void)
   spr = &spritetable[SCOREBOX_SPR-STARTSPRITES];
   dest = (spritetype _seg *)grsegs[SCOREBOX_SPR];
 
-  CAL_ShiftSprite (FP_SEG(dest),dest->sourceoffset[0],
+  CAL_ShiftSprite (SCOREBOX_SPR,dest->sourceoffset[0],
     dest->sourceoffset[1],spr->width,spr->height,2);
 
-  CAL_ShiftSprite (FP_SEG(dest),dest->sourceoffset[0],
+  CAL_ShiftSprite (SCOREBOX_SPR,dest->sourceoffset[0],
     dest->sourceoffset[2],spr->width,spr->height,4);
 
-  CAL_ShiftSprite (FP_SEG(dest),dest->sourceoffset[0],
+  CAL_ShiftSprite (SCOREBOX_SPR,dest->sourceoffset[0],
     dest->sourceoffset[3],spr->width,spr->height,6);
 }
 

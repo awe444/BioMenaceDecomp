@@ -39,7 +39,7 @@ extern Uint16 colorstep;
 extern Uint8 unktime;
 
 Uint16 fadecount;
-Sint16 mapon;
+int mapon;
 
 /*
 =============================================================================

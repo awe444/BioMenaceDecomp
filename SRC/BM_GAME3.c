@@ -280,7 +280,8 @@ void PicturePause(void)
 // wait for a key press, abort if it's not Enter
 //
   IN_ClearKeysDown();
-  while (!LastScan);
+  while (!LastScan)
+    IN_PumpEvents();
   if (LastScan != sc_Enter)
   {
     IN_ClearKeysDown();
@@ -870,7 +871,8 @@ void CheckKeys(void)
       SD_MusicOff();
       cputs("C:>");
       IN_ClearKeysDown();
-      while (LastScan != sc_Escape);
+      while (LastScan != sc_Escape)
+        IN_PumpEvents();
       VW_SetScreenMode(GRMODE);
       VW_ColorBorder(bordercolor);
       RF_ForceRefresh();

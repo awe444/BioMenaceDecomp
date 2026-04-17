@@ -39,7 +39,7 @@ updated
 */
 
 #include "ID_HEADS.H"
-#pragma hdrstop
+
 
 /*
 =============================================================================
@@ -123,7 +123,7 @@ typedef struct animtilestruct
 {
   unsigned  x,y,tile;
   tiletype  *chain;
-  unsigned  far *mapplane;
+  uint16_t  far *mapplane;
   struct animtilestruct **prevptr,*nexttile;
 } animtiletype;
 
@@ -443,9 +443,9 @@ void RF_MarkTileGraphics (void)
 {
   unsigned  size;
   int     tile,next,anims,change;
-  unsigned  far *start,far *end,far *info;
+  uint16_t  far *start,far *end,far *info;
   unsigned  i,tilehigh;
-  char    str[80],str2[10];
+  char    str[80],str2[16];
 
   memset (allanims,0,sizeof(allanims));
   numanimchains = 0;
@@ -473,14 +473,14 @@ void RF_MarkTileGraphics (void)
           if (!tinf[ANIM+tile])
           {
             strcpy (str,"RF_MarkTileGraphics: Background anim of 0:");
-            itoa (tile,str2,10);
+            sprintf(str2, "%d", tile);
             strcat (str,str2);
             Quit (str);
           }
           for (i=0;i<numanimchains;i++)
             if (allanims[i].current == tile)
             {
-              *info = (unsigned)&allanims[i];
+              *info = i;
               goto nextback;
             }
 
@@ -490,7 +490,7 @@ void RF_MarkTileGraphics (void)
             Quit ("RF_MarkTileGraphics: Too many unique animated tiles!");
           allanims[i].current = tile;
           allanims[i].count = tinf[SPEED+tile];
-          *info = (unsigned)&allanims[i];
+          *info = i;
           numanimchains++;
         }
 
@@ -505,7 +505,7 @@ void RF_MarkTileGraphics (void)
           if (++anims > 20)
           {
             strcpy (str,"RF_MarkTileGraphics: Unending background animation:");
-            itoa (next,str2,10);
+            sprintf(str2, "%d", next);
             strcat (str,str2);
             Quit (str);
           }
@@ -538,7 +538,7 @@ nextback:
           if (!tinf[MANIM+tile])
           {
             strcpy (str,"RF_MarkTileGraphics: Foreground anim of 0:");
-            itoa (tile,str2,10);
+            sprintf(str2, "%d", tile);
             strcat (str,str2);
             Quit (str);
           }
@@ -546,7 +546,7 @@ nextback:
           for (i=0;i<numanimchains;i++)
             if (allanims[i].current == tilehigh)
             {
-              *info = (unsigned)&allanims[i];
+              *info = i;
               goto nextfront;
             }
 
@@ -556,7 +556,7 @@ nextback:
             Quit ("RF_MarkTileGraphics: Too many unique animated tiles!");
           allanims[i].current = tilehigh;
           allanims[i].count = tinf[MSPEED+tile];
-          *info = (unsigned)&allanims[i];
+          *info = i;
           numanimchains++;
         }
 
@@ -571,7 +571,7 @@ nextback:
           if (++anims > 20)
           {
             strcpy (str,"RF_MarkTileGraphics: Unending foreground animation:");
-            itoa (next,str2,10);
+            sprintf(str2, "%d", next);
             strcat (str,str2);
             Quit (str);
           }
@@ -625,10 +625,10 @@ void RFL_InitAnimList (void)
 void RFL_CheckForAnimTile (unsigned x, unsigned y)
 {
   unsigned  tile,offset,speed,lasttime,thistime,timemissed;
-  unsigned  far *map;
+  uint16_t  far *map;
   animtiletype  *anim,*next;
 
-// the info plane of each animating tile has a near pointer into allanims[]
+// the info plane of each animating tile has an index into allanims[]
 // which gives the current state of all concurrently animating tiles
 
   offset = mapbwidthtable[y]/2+x;
@@ -655,7 +655,7 @@ void RFL_CheckForAnimTile (unsigned x, unsigned y)
     anim->y = y;
     anim->tile = tile;
     anim->mapplane = map;
-    anim->chain = (tiletype *)*(mapsegs[2]+offset);
+    anim->chain = &allanims[*(mapsegs[2]+offset)];
   }
 
 //
@@ -680,7 +680,7 @@ void RFL_CheckForAnimTile (unsigned x, unsigned y)
     anim->y = y;
     anim->tile = tile;
     anim->mapplane = map;
-    anim->chain = (tiletype *)*(mapsegs[2]+offset);
+    anim->chain = &allanims[*(mapsegs[2]+offset)];
   }
 
 }
@@ -1155,8 +1155,8 @@ void RF_MapToMap (unsigned srcx, unsigned srcy,
   int     x,y;
   unsigned  source,destofs,xspot,yspot;
   unsigned  linedelta,p0,p1,p2,updatespot;
-  unsigned  far *source0, far *source1, far *source2;
-  unsigned  far *dest0, far *dest1, far *dest2;
+  uint16_t  far *source0, far *source1, far *source2;
+  uint16_t  far *dest0, far *dest1, far *dest2;
   boolean   changed;
 
   RFL_RemoveAnimsInBlock (destx,desty,width,height);
@@ -1227,14 +1227,15 @@ void RF_MapToMap (unsigned srcx, unsigned srcy,
 =====================
 */
 
-void RF_MemToMap (unsigned far *source, unsigned plane,
+void RF_MemToMap (uint16_t far *source, unsigned plane,
           unsigned destx, unsigned desty,
           unsigned width, unsigned height)
 {
   int     x,y;
   unsigned  xspot,yspot;
   unsigned  linedelta,updatespot;
-  unsigned  far *dest,old,new;
+  uint16_t  far *dest;
+  unsigned  old,new;
   boolean   changed;
 
   RFL_RemoveAnimsInBlock (destx,desty,width,height);
@@ -1433,7 +1434,7 @@ void RF_CalcTics (void)
 //
     oldtimecount = lasttimecount;
     while (TimeCount<oldtimecount+DEMOTICS*2)
-    ;
+      IN_PumpEvents();
     lasttimecount = oldtimecount + DEMOTICS;
     TimeCount = lasttimecount + DEMOTICS;
     tics = DEMOTICS;
@@ -1445,6 +1446,7 @@ void RF_CalcTics (void)
 //
     do
     {
+      IN_PumpEvents();
       newtime = TimeCount;
       tics = newtime-lasttimecount;
     } while (tics<MINTICS);
@@ -1452,7 +1454,7 @@ void RF_CalcTics (void)
 
 #ifdef PROFILE
       strcpy (scratch,"\tTics:");
-      itoa (tics,str,10);
+      sprintf(str, "%d", tics);
       strcat (scratch,str);
       strcat (scratch,"\n");
       write (profilehandle,scratch,strlen(scratch));
@@ -1728,7 +1730,7 @@ void RF_PlaceSprite (void **user,unsigned globalx,unsigned globaly,
   spritetabletype far *spr;
   spritetype _seg *block;
   unsigned  shift,pixx;
-  char    str[80],str2[10];
+  char    str[80],str2[16];
 
   if (!spritenumber || spritenumber == (unsigned)-1)
   {
@@ -1793,7 +1795,7 @@ linknewspot:
   if (!block)
   {
     strcpy (str,"RF_PlaceSprite: Placed an uncached sprite:");
-    itoa (spritenumber,str2,10);
+    sprintf(str2, "%d", spritenumber);
     strcat (str,str2);
     Quit (str);
   }
@@ -1987,7 +1989,7 @@ next:
   eraselistptr[otherpage] = otherpage ? &eraselist[1][0] : &eraselist[0][0];
 #ifdef PROFILE
   strcpy (scratch,"\tErase:");
-  itoa (erasecount,str,10);
+  sprintf(str, "%d", erasecount);
   strcat (scratch,str);
   write (profilehandle,scratch,strlen(scratch));
 #endif
@@ -2124,7 +2126,7 @@ redraw:
   }
 #ifdef PROFILE
   strcpy (scratch,"\tSprites:");
-  itoa (updatecount,str,10);
+  sprintf(str, "%d", updatecount);
   strcat (scratch,str);
   write (profilehandle,scratch,strlen(scratch));
 #endif
@@ -2190,13 +2192,8 @@ void RF_Refresh (void)
 // with an UPDATETERMINATE at the end
 //
   updatestart[otherpage] = newupdate = baseupdatestart[otherpage];
-asm mov ax,ds
-asm mov es,ax
-asm xor ax,ax
-asm mov cx,(UPDATESCREENSIZE-2)/2
-asm mov di,[newupdate]
-asm rep stosw
-asm mov [WORD PTR es:di],UPDATETERMINATE
+  memset(newupdate, 0, UPDATESCREENSIZE-2);
+  *(unsigned *)(newupdate + UPDATESCREENSIZE - 2) = UPDATETERMINATE;
 
   screenpage ^= 1;
   otherpage ^= 1;
@@ -2403,7 +2400,7 @@ void RF_PlaceSprite (void **user,unsigned globalx,unsigned globaly,
   spritetabletype far *spr;
   spritetype _seg *block;
   unsigned  shift,pixx;
-  char    str[80],str2[10];
+  char    str[80],str2[16];
 
   if (!spritenumber || spritenumber == (unsigned)-1)
   {
@@ -2464,7 +2461,7 @@ linknewspot:
   if (!block)
   {
     strcpy (str,"RF_PlaceSprite: Placed an uncached sprite!");
-    itoa (spritenumber,str2,10);
+    sprintf(str2, "%d", spritenumber);
     strcat (str,str2);
     Quit (str);
   }

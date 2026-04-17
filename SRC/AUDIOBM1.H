@@ -81,9 +81,10 @@ typedef enum {
   LASTSOUND
 } soundnames;
 
-#if LASTSOUND != 42
-#error bad sound enum!
-#endif
+/* Original compile-time check: LASTSOUND must be 42.
+ * Can't use #if with enum values in standard C, so use _Static_assert instead.
+ */
+_Static_assert(LASTSOUND == 42, "bad sound enum!");
 
 #define NOWAYSND SND_NOKEY
 

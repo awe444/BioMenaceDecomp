@@ -25,10 +25,9 @@
 #ifndef __BM_DEF__
 #define __BM_DEF__
 
-#include <BIOS.H>
-#include <CONIO.H>
-
 #include "ID_HEADS.H"
+
+/* BIOS.H and CONIO.H are DOS-only. ID_COMPAT.H provides the needed stubs. */
 
 /*
 =============================================================================
@@ -101,29 +100,22 @@ Using PURGE_FIRST is identical to using PURGE_LAST.
 =============================================================================
 */
 
-//SDL-style integer types - just to make future SDL ports easier
-typedef unsigned int Uint16;
-typedef signed int Sint16;
-typedef unsigned char Uint8;
-typedef signed char Sint8;
-typedef unsigned long Uint32;
-typedef signed long Sint32;
+//SDL-style integer types - use stdint.h for correct sizes on all platforms
+typedef uint16_t Uint16;
+typedef int16_t Sint16;
+typedef uint8_t Uint8;
+typedef int8_t Sint8;
+typedef uint32_t Uint32;
+typedef int32_t Sint32;
 //Note: only the game code (BM_*.C) uses these!
 
 //some compile-time checks to make sure the ints have the correct size
-#if (sizeof(Uint16) != 2)
-#error 'Uint16' has wrong size
-#elif (sizeof(Sint16) != 2)
-#error 'Sint16' has wrong size
-#elif (sizeof(Uint8) != 1)
-#error 'Uint8' has wrong size
-#elif (sizeof(Sint8) != 1)
-#error 'Sint8' has wrong size
-#elif (sizeof(Uint32) != 4)
-#error 'Uint32' has wrong size
-#elif (sizeof(Sint32) != 4)
-#error 'Sint32' has wrong size
-#endif
+_Static_assert(sizeof(Uint16) == 2, "Uint16 has wrong size");
+_Static_assert(sizeof(Sint16) == 2, "Sint16 has wrong size");
+_Static_assert(sizeof(Uint8)  == 1, "Uint8 has wrong size");
+_Static_assert(sizeof(Sint8)  == 1, "Sint8 has wrong size");
+_Static_assert(sizeof(Uint32) == 4, "Uint32 has wrong size");
+_Static_assert(sizeof(Sint32) == 4, "Sint32 has wrong size");
 
 typedef enum {
   arrow_North,     // 0

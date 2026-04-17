@@ -75,20 +75,22 @@
 
 //===========================================================================
 
+#pragma pack(push, 1)
 typedef	struct
 {
-	long		planestart[3];
-	unsigned	planelength[3];
-	unsigned	width,height;
+	int32_t		planestart[3];
+	uint16_t	planelength[3];
+	uint16_t	width,height;
 	char		name[16];
 } maptype;
+#pragma pack(pop)
 
 //===========================================================================
 
 extern	byte 		_seg	*tinf;
 extern	int			mapon;
 
-extern	unsigned	_seg	*mapsegs[3];
+extern	uint16_t	_seg	*mapsegs[3];
 extern	maptype		_seg	*mapheaderseg[NUMMAPS];
 extern	byte		_seg	*audiosegs[NUMSNDCHUNKS];
 extern	void		_seg	*grsegs[];
@@ -123,11 +125,11 @@ boolean CA_FarWrite (int handle, byte far *source, long length);
 boolean CA_ReadFile (char *filename, memptr *ptr);
 boolean CA_LoadFile (char *filename, memptr *ptr);
 
-long CA_RLEWCompress (unsigned huge *source, long length, unsigned huge *dest,
-  unsigned rlewtag);
+long CA_RLEWCompress (uint16_t huge *source, long length, uint16_t huge *dest,
+  uint16_t rlewtag);
 
-void CA_RLEWexpand (unsigned huge *source, unsigned huge *dest,long length,
-  unsigned rlewtag);
+void CA_RLEWexpand (uint16_t huge *source, uint16_t huge *dest,long length,
+  uint16_t rlewtag);
 
 void CA_Startup (void);
 void CA_Shutdown (void);

@@ -105,7 +105,11 @@
 
 //===========================================================================
 
+//
+// VGA/EGA register index constants - kept for use as magic numbers
+//
 
+/* Sequencer registers */
 #define SC_INDEX  0x3C4
 #define SC_RESET  0
 #define SC_CLOCK  1
@@ -113,6 +117,7 @@
 #define SC_CHARMAP  3
 #define SC_MEMMODE  4
 
+/* CRTC registers */
 #define CRTC_INDEX  0x3D4
 #define CRTC_H_TOTAL  0
 #define CRTC_H_DISPEND  1
@@ -140,7 +145,7 @@
 #define CRTC_MODE 23
 #define CRTC_LINECOMPARE 24
 
-
+/* Graphics Controller registers */
 #define GC_INDEX  0x3CE
 #define GC_SETRESET 0
 #define GC_ENABLESETRESET 1
@@ -152,6 +157,7 @@
 #define GC_COLORDONTCARE 7
 #define GC_BITMASK  8
 
+/* Attribute Controller registers */
 #define ATR_INDEX 0x3c0
 #define ATR_MODE  16
 #define ATR_OVERSCAN  17
@@ -168,7 +174,7 @@ typedef enum {NOcard,MDAcard,CGAcard,EGAcard,MCGAcard,VGAcard,
 
 typedef struct
 {
-  int width,
+  int16_t width,
   height,
   orgx,orgy,
   xl,yl,xh,yh,
@@ -177,22 +183,22 @@ typedef struct
 
 typedef struct
 {
-  unsigned  sourceoffset[MAXSHIFTS];
-  unsigned  planesize[MAXSHIFTS];
-  unsigned  width[MAXSHIFTS];
+  uint16_t  sourceoffset[MAXSHIFTS];
+  uint16_t  planesize[MAXSHIFTS];
+  uint16_t  width[MAXSHIFTS];
   byte    data[];
 } spritetype;   // the memptr for each sprite points to this
 
 typedef struct
 {
-  int width,height;
+  int16_t width,height;
 } pictabletype;
 
 
 typedef struct
 {
-  int height;
-  int location[256];
+  int16_t height;
+  int16_t location[256];
   char width[256];
 } fontstruct;
 
@@ -237,6 +243,16 @@ extern  unsigned  *shifttabletable[8];
 extern  unsigned  bufferwidth,bufferheight,screenspot;  // used by font drawing stuff
 
 
+//===========================================================================
+
+//
+// EGA hardware register macros - no-ops in SDL port
+//
+
+#define EGAWRITEMODE(x)
+#define EGABITMASK(x)
+#define EGAMAPMASK(x)
+#define EGAREADMAP(x)
 
 //===========================================================================
 
@@ -245,15 +261,6 @@ void  VW_Startup (void);
 void  VW_Shutdown (void);
 
 cardtype  VW_VideoID (void);
-
-//
-// EGA hardware routines
-//
-
-#define EGAWRITEMODE(x) asm{cli;mov dx,GC_INDEX;mov ax,GC_MODE+256*x;out dx,ax;sti;}
-#define EGABITMASK(x) asm{cli;mov dx,GC_INDEX;mov ax,GC_BITMASK+256*x;out dx,ax;sti;}
-#define EGAMAPMASK(x) asm{cli;mov dx,SC_INDEX;mov ax,SC_MAPMASK+x*256;out dx,ax;sti;}
-#define EGAREADMAP(x) asm{cli;mov dx,GC_INDEX;mov ax,GC_READMAP+x*256;out dx,ax;sti;}
 
 void  VW_SetLineWidth(int width);
 void  VW_SetSplitScreen(int width);
@@ -272,6 +279,8 @@ void  VW_FadeUp(void);
 void  VW_FadeDown(void);
 
 void  VW_SetAtrReg (int reg, int value);
+
+void  VW_Present(void);
 
 //
 // block primitives

@@ -25,18 +25,8 @@
 // ID_GLOB.H
 
 
-#include <ALLOC.H>
-#include <CTYPE.H>
-#include <DOS.H>
-#include <ERRNO.H>
-#include <FCNTL.H>
-#include <IO.H>
-#include <MEM.H>
-#include <PROCESS.H>
-#include <STDIO.H>
-#include <STDLIB.H>
-#include <STRING.H>
-#include <SYS\STAT.H>
+#include "ID_COMPAT.H"
+#include <ctype.h>
 
 #define __ID_GLOB__
 
@@ -81,8 +71,8 @@ extern  char far introscn;
 
 typedef enum  {false,true}  boolean;
 typedef unsigned  char    byte;
-typedef unsigned  int     word;
-typedef unsigned  long    longword;
+typedef uint16_t         word;
+typedef uint32_t         longword;
 typedef byte *          Ptr;
 
 typedef struct
