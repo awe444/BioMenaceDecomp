@@ -35,6 +35,10 @@
 
 #include "BM_DEF.H"
 
+#if SDL_PORT && defined(__ANDROID__)
+#include <SDL.h>
+#endif
+
 /*
 =============================================================================
 
@@ -600,6 +604,17 @@ int main(int argc, char *argv[])
 
   _argc = argc;
   _argv = argv;
+
+#if SDL_PORT && defined(__ANDROID__)
+  /* On Android the game data files live in the app's internal storage
+     directory.  SDL2 copies APK assets there (or the user pushes them
+     via adb).  We must chdir so the relative open() calls find them. */
+  {
+    const char *path = SDL_AndroidGetInternalStoragePath();
+    if (path)
+      chdir(path);
+  }
+#endif
 
 #ifndef SHAREWARE
   copyprotectionfailed = CheckCopyProtection();

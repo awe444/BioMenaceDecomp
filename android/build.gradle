@@ -1,0 +1,4 @@
+// Top-level build file for BioMenace Android project
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}

@@ -127,3 +127,66 @@ gdb ./bmenace1 core
 
 In order to play the game, the original game data files from the freeware or shareware release are required —
 this repository doesn't contain any data files.
+
+### ARM64 Android build (via Gradle)
+
+The Android build produces an APK targeting ARM64 (`arm64-v8a`) devices.
+It uses Gradle with CMake and the Android NDK, and links against SDL2 built from source.
+
+**Prerequisites:**
+
+* Android SDK (API 35+), NDK r27+, and CMake (bundled with the SDK or 3.16+).
+  Android Studio will install these automatically, or set `ANDROID_HOME` manually.
+* SDL2 source code, placed at `android/app/jni/SDL2/`.
+
+Download and extract SDL2:
+
+```bash
+cd android/app/jni
+wget https://github.com/libsdl-org/SDL/releases/download/release-2.30.12/SDL2-2.30.12.tar.gz
+tar xf SDL2-2.30.12.tar.gz
+mv SDL2-2.30.12 SDL2
+```
+
+**Game data files:**
+
+The game needs its original data files at run-time.
+There are two ways to supply them:
+
+1. **Bundle in the APK** (recommended): Copy the data files into
+   `android/app/src/main/assets/` before building. They will be
+   automatically extracted to internal storage on first launch.
+
+   ```bash
+   # Example — copy all .BM1 data files into the assets directory
+   mkdir -p android/app/src/main/assets
+   cp /path/to/gamedata/*.BM1 android/app/src/main/assets/
+   ```
+
+2. **Push to the device manually** after installing the APK:
+
+   ```bash
+   adb push /path/to/gamedata/*.BM1 /data/data/com.biomenace.app/files/
+   ```
+
+**Building:**
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+The resulting APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+To build a release APK (requires signing configuration):
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+**Installing on a device:**
+
+```bash
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
