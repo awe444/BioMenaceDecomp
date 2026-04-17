@@ -51,6 +51,8 @@
 
 #include <SDL.h>
 
+#include "opl.h"
+
 #ifdef  _MUSE_      // Will be defined in ID_Types.h
 #include "ID_SD.h"
 #else
@@ -63,6 +65,10 @@ extern int _argc;
 extern char **_argv;
 
 #define SDL_SoundFinished() {SoundNumber = SoundPriority = 0;}
+
+// Thread-safe audio device locking macros
+#define SD_LockAudio()   do { if (sdl_audioStarted) SDL_LockAudioDevice(sdl_audioDevice); } while(0)
+#define SD_UnlockAudio() do { if (sdl_audioStarted) SDL_UnlockAudioDevice(sdl_audioDevice); } while(0)
 
 //  Global variables
   boolean   SoundSourcePresent,SoundBlasterPresent,AdLibPresent,QuietFX,
@@ -90,6 +96,22 @@ static  long      LocalTime;
 // SDL2 timing state for 70Hz TimeCount emulation
 static  Uint32      sdl_lastTicks;
 static  Uint32      sdl_tickRemainder;
+
+// SDL2 audio output state
+#define SD_SAMPLE_RATE    49716   // Native OPL sample rate
+#define SD_SFX_RATE       140     // Service routine rate (Hz)
+#define PC_PIT_RATE       1193182 // PC PIT base clock
+
+static  SDL_AudioDeviceID sdl_audioDevice;
+static  boolean     sdl_audioStarted;
+static  int       sdl_samplesPerTick;   // Samples between 140Hz service calls
+static  int       sdl_sampleCounter;    // Counts down to next service tick
+
+// PC Speaker emulation state
+static  boolean     sdl_pcSpkActive;
+static  int16_t     sdl_pcSpkSample;
+static  uint32_t    sdl_pcSpkCounter;
+static  uint32_t    sdl_pcSpkPeriod;     // Half-cycle period in samples * PIT_RATE
 
 //  PC Sound variables
 static  byte      pcLastSample,far *pcSound;
@@ -124,29 +146,37 @@ static  long      sqHackTime;
 
 ///////////////////////////////////////////////////////////////////////////
 //
-//  SD_UpdateTimeCount() - Updates TimeCount based on SDL_GetTicks() to
-//    emulate the original 70Hz timer interrupt
+//  SD_UpdateTimeCount() - Updates TimeCount.
+//    When SDL audio is active, TimeCount is driven by the audio callback
+//    at a precise 70Hz rate. This function is a no-op in that case.
+//    When audio is not yet started, falls back to SDL_GetTicks() timing.
 //
 ///////////////////////////////////////////////////////////////////////////
 void
 SD_UpdateTimeCount(void)
 {
-  Uint32  now = SDL_GetTicks();
-  Uint32  elapsed_ms = now - sdl_lastTicks;
-  Uint32  total, ticks;
+  if (sdl_audioStarted)
+    return;   // Audio callback handles TimeCount at 70Hz
 
-  sdl_lastTicks = now;
+  // Fallback for before audio is initialized
+  {
+    Uint32  now = SDL_GetTicks();
+    Uint32  elapsed_ms = now - sdl_lastTicks;
+    Uint32  total, ticks;
 
-  // Convert elapsed milliseconds to 70Hz ticks with remainder tracking
-  total = elapsed_ms * 70 + sdl_tickRemainder;
-  ticks = total / 1000;
-  sdl_tickRemainder = total % 1000;
+    sdl_lastTicks = now;
 
-  TimeCount += ticks;
-  LocalTime += ticks;
+    // Convert elapsed milliseconds to 70Hz ticks with remainder tracking
+    total = elapsed_ms * 70 + sdl_tickRemainder;
+    ticks = total / 1000;
+    sdl_tickRemainder = total % 1000;
 
-  if (ticks > 0 && SoundUserHook)
-    SoundUserHook();
+    TimeCount += ticks;
+    LocalTime += ticks;
+
+    if (ticks > 0 && SoundUserHook)
+      SoundUserHook();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -163,10 +193,12 @@ SDL_SetTimerSpeed(void)
 //  PC Sound code
 //
 
+// Forward declaration - defined after AdLib code with SDL2 audio callback
+static void SDL_SetPCSpk(word value);
+
 ///////////////////////////////////////////////////////////////////////////
 //
 //  SDL_PCPlaySound() - Plays the specified sound on the PC speaker
-//    (stub: records state only, no actual audio)
 //
 ///////////////////////////////////////////////////////////////////////////
 #ifdef  _MUSE_
@@ -199,7 +231,7 @@ SDL_PCStopSound(void)
 ///////////////////////////////////////////////////////////////////////////
 //
 //  SDL_PCService() - Handles playing the next sample in a PC sound
-//    (stub: advances state only, no actual audio output)
+//    Updates the PC speaker square wave emulation
 //
 ///////////////////////////////////////////////////////////////////////////
 static void
@@ -211,12 +243,16 @@ SDL_PCService(void)
   {
     s = *pcSound++;
     if (s != pcLastSample)
+    {
       pcLastSample = s;
+      SDL_SetPCSpk(pcSoundLookup[s]);
+    }
 
     if (!(--pcLengthLeft))
     {
       SDL_PCStopSound();
       SDL_SoundFinished();
+      SDL_SetPCSpk(0);
     }
   }
 }
@@ -230,6 +266,7 @@ static void
 SDL_ShutPC(void)
 {
   pcSound = 0;
+  SDL_SetPCSpk(0);
 }
 
 //  AdLib Code
@@ -237,14 +274,13 @@ SDL_ShutPC(void)
 ///////////////////////////////////////////////////////////////////////////
 //
 //  alOut(n,b) - Puts b in AdLib card register n
-//    (stub: no-op, no hardware to write to)
+//    Writes to the OPL emulator
 //
 ///////////////////////////////////////////////////////////////////////////
 void
 alOut(byte n,byte b)
 {
-  (void)n;
-  (void)b;
+  OPL_WriteReg(n, b);
 }
 
 #if 0
@@ -488,6 +524,174 @@ SDL_StartAL(void)
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//  SDL2 Audio callback and PC speaker emulation
+//
+///////////////////////////////////////////////////////////////////////////
+
+//
+//  SDL_PCSpkMix() - Mixes PC speaker square wave into an existing buffer
+//
+static void
+SDL_PCSpkMix(int16_t *buffer, int length)
+{
+  int i;
+
+  if (!sdl_pcSpkActive || sdl_pcSpkPeriod == 0)
+    return;
+
+  for (i = 0; i < length; i++)
+  {
+    int32_t mixed = (int32_t)buffer[i] + (int32_t)sdl_pcSpkSample;
+    if (mixed > 32767)  mixed = 32767;
+    if (mixed < -32768) mixed = -32768;
+    buffer[i] = (int16_t)mixed;
+
+    sdl_pcSpkCounter += 2 * PC_PIT_RATE;
+    if (sdl_pcSpkCounter >= sdl_pcSpkPeriod)
+    {
+      sdl_pcSpkCounter %= sdl_pcSpkPeriod;
+      sdl_pcSpkSample = 8192 - sdl_pcSpkSample;  // Toggle between 0 and 8192
+    }
+  }
+}
+
+//
+//  SD_SDL_AudioCB() - SDL2 audio callback, generates OPL + PC speaker audio
+//    and runs the 140Hz service routines for sound effects and music
+//
+static void
+SD_SDL_AudioCB(void *userdata, Uint8 *stream, int len)
+{
+  int16_t *out = (int16_t *)stream;
+  int   totalSamples = len / sizeof(int16_t);
+
+  (void)userdata;
+
+  while (totalSamples > 0)
+  {
+    int chunk;
+
+    // If we've counted down to zero, fire the service routines (140Hz tick)
+    if (sdl_sampleCounter <= 0)
+    {
+      // Run sound effect service
+      switch (SoundMode)
+      {
+      case sdm_PC:
+        SDL_PCService();
+        break;
+      case sdm_AdLib:
+        SDL_ALSoundService();
+        break;
+      }
+
+      // Run music sequencer service
+      if (MusicMode == smm_AdLib)
+        SDL_ALService();
+
+      // Update TimeCount (70Hz = every other 140Hz tick)
+      HackCount++;
+      if (HackCount >= 2)
+      {
+        HackCount = 0;
+        TimeCount++;
+        LocalTime++;
+        if (SoundUserHook)
+          SoundUserHook();
+      }
+
+      sdl_sampleCounter += sdl_samplesPerTick;
+    }
+
+    // Generate samples up to the next service tick (or end of buffer)
+    chunk = sdl_sampleCounter;
+    if (chunk > totalSamples)
+      chunk = totalSamples;
+
+    // Generate OPL samples
+    OPL_GenerateSamples(out, (uint32_t)chunk);
+
+    // Mix in PC speaker square wave
+    SDL_PCSpkMix(out, chunk);
+
+    out += chunk;
+    totalSamples -= chunk;
+    sdl_sampleCounter -= chunk;
+  }
+}
+
+//
+//  SDL_SetPCSpk() - Updates PC speaker emulation state based on pcSoundLookup
+//
+static void
+SDL_SetPCSpk(word value)
+{
+  if (value)
+  {
+    sdl_pcSpkActive = true;
+    sdl_pcSpkPeriod = (uint32_t)SD_SAMPLE_RATE * value;
+    sdl_pcSpkCounter = 0;
+    sdl_pcSpkSample = 8192;
+  }
+  else
+  {
+    sdl_pcSpkActive = false;
+  }
+}
+
+//
+//  SDL_StartAudio() - Opens the SDL2 audio device
+//
+static void
+SDL_StartAudio(void)
+{
+  SDL_AudioSpec desired, obtained;
+
+  if (sdl_audioStarted)
+    return;
+
+  OPL_Init(SD_SAMPLE_RATE);
+
+  memset(&desired, 0, sizeof(desired));
+  desired.freq = SD_SAMPLE_RATE;
+  desired.format = AUDIO_S16SYS;
+  desired.channels = 1;
+  desired.samples = 512;
+  desired.callback = SD_SDL_AudioCB;
+
+  sdl_audioDevice = SDL_OpenAudioDevice(NULL, 0, &desired, &obtained, 0);
+  if (sdl_audioDevice == 0)
+  {
+    fprintf(stderr, "SD: SDL_OpenAudioDevice failed: %s\n", SDL_GetError());
+    return;
+  }
+
+  sdl_samplesPerTick = obtained.freq / SD_SFX_RATE;
+  sdl_sampleCounter = sdl_samplesPerTick;
+
+  // Unpause the audio device to start playback
+  SDL_PauseAudioDevice(sdl_audioDevice, 0);
+  sdl_audioStarted = true;
+}
+
+//
+//  SDL_StopAudio() - Closes the SDL2 audio device
+//
+static void
+SDL_StopAudio(void)
+{
+  if (!sdl_audioStarted)
+    return;
+
+  SDL_CloseAudioDevice(sdl_audioDevice);
+  sdl_audioDevice = 0;
+  sdl_audioStarted = false;
+
+  OPL_Shutdown();
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
 //  SDL_DetectAdLib() - In the SDL2 stub, always reports AdLib as present
 //
 ///////////////////////////////////////////////////////////////////////////
@@ -676,6 +880,10 @@ SD_Startup(void)
   sdl_lastTicks = SDL_GetTicks();
   sdl_tickRemainder = 0;
   LocalTime = TimeCount = alTimeCount = 0;
+  HackCount = 0;
+
+  // Start SDL2 audio output
+  SDL_StartAudio();
 
   SD_SetSoundMode(sdm_Off);
   SD_SetMusicMode(smm_Off);
@@ -758,6 +966,8 @@ SD_Shutdown(void)
   SDL_ShutDevice();
   SDL_CleanDevice();
 
+  SDL_StopAudio();
+
   SD_Started = false;
 }
 
@@ -794,6 +1004,8 @@ SD_PlaySound(soundnames sound)
   if (s->priority < SoundPriority)
     return;
 
+  SD_LockAudio();
+
   switch (SoundMode)
   {
   case sdm_PC:
@@ -806,6 +1018,8 @@ SD_PlaySound(soundnames sound)
 
   SoundNumber = sound;
   SoundPriority = s->priority;
+
+  SD_UnlockAudio();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -843,6 +1057,8 @@ SD_SoundPlaying(void)
 void
 SD_StopSound(void)
 {
+  SD_LockAudio();
+
   switch (SoundMode)
   {
   case sdm_PC:
@@ -854,18 +1070,20 @@ SD_StopSound(void)
   }
 
   SDL_SoundFinished();
+
+  SD_UnlockAudio();
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
 //  SD_WaitSoundDone() - waits until the current sound is done playing
-//    (stub: stops sound immediately since there is no audio playback)
 //
 ///////////////////////////////////////////////////////////////////////////
 void
 SD_WaitSoundDone(void)
 {
-  SD_StopSound();
+  while (SD_SoundPlaying())
+    SDL_Delay(5);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -876,7 +1094,9 @@ SD_WaitSoundDone(void)
 void
 SD_MusicOn(void)
 {
+  SD_LockAudio();
   sqActive = true;
+  SD_UnlockAudio();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -889,6 +1109,7 @@ SD_MusicOff(void)
 {
   word  i;
 
+  SD_LockAudio();
 
   switch (MusicMode)
   {
@@ -900,6 +1121,8 @@ SD_MusicOff(void)
     break;
   }
   sqActive = false;
+
+  SD_UnlockAudio();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -912,14 +1135,18 @@ SD_StartMusic(MusicGroup far *music)
 {
   SD_MusicOff();
 
+  SD_LockAudio();
+
   if (MusicMode == smm_AdLib)
   {
     sqHackPtr = sqHack = music->values;
     sqHackSeqLen = sqHackLen = music->length;
     sqHackTime = 0;
     alTimeCount = 0;
-    SD_MusicOn();
+    sqActive = true;
   }
+
+  SD_UnlockAudio();
 }
 
 ///////////////////////////////////////////////////////////////////////////
