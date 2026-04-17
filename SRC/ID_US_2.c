@@ -555,6 +555,7 @@ USL_CtlDialog(char *s1,char *s2,char *s3)
   IN_ClearKeysDown();
   do
   {
+    IN_PumpEvents();
     IN_ReadCursor(&cursorinfo);
     if (cursorinfo.button0)
       c = sc_Y;
@@ -565,6 +566,7 @@ USL_CtlDialog(char *s1,char *s2,char *s3)
   } while (c == sc_None);
   do
   {
+    IN_PumpEvents();
     IN_ReadCursor(&cursorinfo);
   } while (cursorinfo.button0 || cursorinfo.button1);
 
@@ -791,9 +793,11 @@ USL_CKSetKey(UserItem far *item,word i)
       time = TimeCount + (TickBase / 2);
     }
 
+    IN_PumpEvents();
     IN_ReadCursor(&cursorinfo);
     while (cursorinfo.button0 || cursorinfo.button1)
     {
+      IN_PumpEvents();
       IN_ReadCursor(&cursorinfo);
       LastScan = sc_Escape;
     }
