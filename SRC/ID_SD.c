@@ -1083,7 +1083,7 @@ void
 SD_WaitSoundDone(void)
 {
   while (SD_SoundPlaying())
-    SDL_Delay(5);
+    SDL_Delay(10);
 }
 
 ///////////////////////////////////////////////////////////////////////////
