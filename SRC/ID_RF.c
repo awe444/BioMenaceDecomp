@@ -216,23 +216,6 @@ eraseblocktype  eraselist[2][MAXSPRITES],*eraselistptr[2];
 int   hscrollblocks,vscrollblocks;
 int   hscrolledge[MAXSCROLLEDGES],vscrolledge[MAXSCROLLEDGES];
 
-//
-// SDL smooth-scroll state: multi-present loop for 60fps display
-//
-#ifdef SDL_PORT
-static unsigned rf_smoothPrevOriginX;
-static unsigned rf_smoothPrevOriginY;
-static unsigned rf_smoothLastTics;
-// Display origin tracks where the smooth-scroll display position is,
-// in global units, using fixed-point 16.16 format for sub-pixel precision.
-static long long rf_displayOriginX;
-static long long rf_displayOriginY;
-static int       rf_smoothInited;
-
-// Wrapper to access SDL_GetTicks from ID_RF.c without including SDL.h
-extern uint32_t SD_GetTimeMs(void);
-#endif
-
 /*
 =============================================================================
 
@@ -358,14 +341,6 @@ void RF_FixOfs (void)
     bufferofs = screenstart[otherpage];
     masterofs = screenstart[2];
     VW_SetScreen (displayofs,0);
-#ifdef SDL_PORT
-    rf_smoothPrevOriginX = originxglobal;
-    rf_smoothPrevOriginY = originyglobal;
-    rf_smoothLastTics = 1;
-    rf_displayOriginX = (long long)originxglobal << 16;
-    rf_displayOriginY = (long long)originyglobal << 16;
-    rf_smoothInited = 0;
-#endif
   }
   else
   {
@@ -1521,7 +1496,18 @@ void RF_CalcTics (void)
       IN_PumpEvents();
       newtime = TimeCount;
       tics = newtime-lasttimecount;
+#ifdef SDL_PORT
+    } while (tics<1);
+    //
+    // Force exactly 1 tick per frame for smooth 60fps.  Game logic runs
+    // at 60 ticks/sec (one per vsync) instead of 70.  TimeCount stays at
+    // 70Hz for sound/music timing.  Excess ticks are discarded by
+    // resyncing lasttimecount to the current TimeCount.
+    //
+    tics = 1;
+#else
     } while (tics<MINTICS);
+#endif
     lasttimecount = newtime;
 
 #ifdef PROFILE
@@ -1631,15 +1617,6 @@ void RF_NewPosition (unsigned x, unsigned y)
   }
   *(word *)(page0ptr-PORTTILESWIDE)
     = *(word *)(page1ptr-PORTTILESWIDE) = UPDATETERMINATE;
-
-#ifdef SDL_PORT
-  rf_smoothPrevOriginX = originxglobal;
-  rf_smoothPrevOriginY = originyglobal;
-  rf_smoothLastTics = 1;
-  rf_displayOriginX = (long long)originxglobal << 16;
-  rf_displayOriginY = (long long)originyglobal << 16;
-  rf_smoothInited = 0;
-#endif
 }
 
 //===========================================================================
@@ -1713,7 +1690,11 @@ void RF_Scroll (int x, int y)
         PORTTILESWIDE*2,PORTTILESHIGH*16);
 
       if (i==screenpage)
+#ifdef SDL_PORT
+        VW_SetScreen(newscreen+oldpanadjust,oldpanx & 7);
+#else
         VW_SetScreen(newscreen+oldpanadjust,oldpanx & xpanmask);
+#endif
     }
   }
   bufferofs = screenstart[otherpage];
@@ -2265,103 +2246,10 @@ void RF_Refresh (void)
 // display the changed screen
 //
 #ifdef SDL_PORT
-  {
-    //
-    // Multi-present smooth scrolling for 60fps display.
-    //
-    // Game logic runs at MINTICS=2 (~35fps).  Between game ticks, we
-    // keep presenting additional frames with a smoothly advancing
-    // "display origin" that tracks the game origin at a constant rate.
-    //
-    // Key idea:  We maintain rf_displayOriginX/Y (fixed-point 16.16)
-    // that advance by exactly  velocity * (70/60)  global units per
-    // vsync frame.  Because vsync guarantees even ~16.67ms spacing,
-    // the per-frame advance is constant, producing perfectly smooth
-    // scrolling regardless of the 70Hz/60Hz tick mismatch.
-    //
-    // On each game tick we recompute the velocity from the actual
-    // movement and re-anchor the display origin so it doesn't drift
-    // away from the true game state.
-    //
-
-    // Compute per-tick velocity from this game tick's movement
-    int dx = (int)originxglobal - (int)rf_smoothPrevOriginX;
-    int dy = (int)originyglobal - (int)rf_smoothPrevOriginY;
-    unsigned last_t = rf_smoothLastTics > 0 ? rf_smoothLastTics : 1;
-
-    // Velocity in global units per tick, fixed-point 16.16
-    long long vel_x_fp = ((long long)dx << 16) / (int)last_t;
-    long long vel_y_fp = ((long long)dy << 16) / (int)last_t;
-
-    // Per-display-frame advance = velocity * (MINTICS * 1000 / 70) / (1000 / 60)
-    //                           = velocity * MINTICS * 60 / 70
-    // For MINTICS=2: advance = velocity * 120/70 = velocity * 12/7
-    // This distributes 2 ticks of movement evenly across ~1.71 display frames.
-    long long step_x = vel_x_fp * MINTICS * 60 / 70;
-    long long step_y = vel_y_fp * MINTICS * 60 / 70;
-
-    // On first frame or after a teleport/level change, snap display to game
-    long long game_ox_fp = (long long)originxglobal << 16;
-    long long game_oy_fp = (long long)originyglobal << 16;
-
-    if (!rf_smoothInited)
-    {
-      rf_displayOriginX = game_ox_fp;
-      rf_displayOriginY = game_oy_fp;
-      rf_smoothInited = 1;
-    }
-    else
-    {
-      // Re-anchor: if the display origin has drifted more than 16 pixels
-      // from the game origin (e.g. direction change, collision),
-      // snap back to the game origin.
-      long long drift_x = rf_displayOriginX - game_ox_fp;
-      long long drift_y = rf_displayOriginY - game_oy_fp;
-      long long max_drift = (long long)16 << (G_P_SHIFT + 16);  // 16 pixels
-
-      if (drift_x > max_drift || drift_x < -max_drift)
-        rf_displayOriginX = game_ox_fp;
-      if (drift_y > max_drift || drift_y < -max_drift)
-        rf_displayOriginY = game_oy_fp;
-    }
-
-    // Present loop: show frames at 60fps until next game tick is ready
-    for (;;)
-    {
-      // Advance the display origin by one display-frame step
-      rf_displayOriginX += step_x;
-      rf_displayOriginY += step_y;
-
-      // Convert fixed-point display origin to integer global units
-      unsigned render_ox = (unsigned)(rf_displayOriginX >> 16);
-      unsigned render_oy = (unsigned)(rf_displayOriginY >> 16);
-
-      // Convert to pixel offset within the tile buffer.
-      // The buffer contains tiles starting at (originxtile, originytile).
-      int disp_panx = (int)((render_ox >> G_P_SHIFT) & 15)
-                    + ((int)(render_ox >> G_T_SHIFT) - (int)originxtile) * 16;
-      int disp_pany = (int)((render_oy >> G_P_SHIFT) & 15)
-                    + ((int)(render_oy >> G_T_SHIFT) - (int)originytile) * 16;
-
-      // Clamp to safe buffer region (0 .. 16 pixels each axis)
-      if (disp_panx < 0) disp_panx = 0;
-      if (disp_panx > 16) disp_panx = 16;
-      if (disp_pany < 0) disp_pany = 0;
-      if (disp_pany > 16) disp_pany = 16;
-
-      // Present with per-pixel precision (no EGA 2-pixel quantization)
-      VW_SetScreen(bufferofs + ylookup[disp_pany], (unsigned)disp_panx);
-
-      // Check if the next game tick is ready
-      IN_PumpEvents();
-      if ((long)TimeCount - lasttimecount >= MINTICS)
-        break;
-    }
-
-    rf_smoothPrevOriginX = originxglobal;
-    rf_smoothPrevOriginY = originyglobal;
-    rf_smoothLastTics = tics;
-  }
+  // Per-pixel panning precision for SDL (no EGA 2-pixel quantization).
+  // With tics=1 at 60fps, the scroll advances the same amount every frame,
+  // so no interpolation is needed — this is inherently smooth.
+  VW_SetScreen(bufferofs+panadjust,panx & 7);
 #else
   VW_SetScreen(bufferofs+panadjust,panx & xpanmask);
 #endif
