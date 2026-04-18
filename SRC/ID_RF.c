@@ -1501,8 +1501,9 @@ void RF_CalcTics (void)
     //
     // Force exactly 1 tick per frame for smooth 60fps.  Game logic runs
     // at 60 ticks/sec (one per vsync) instead of 70.  TimeCount stays at
-    // 70Hz for sound/music timing.  Excess ticks are discarded by
-    // resyncing lasttimecount to the current TimeCount.
+    // 70Hz for sound/music timing.  Any ticks beyond the first are
+    // intentionally ignored: lasttimecount resyncs to the current
+    // TimeCount so they don't accumulate across frames.
     //
     tics = 1;
 #else
