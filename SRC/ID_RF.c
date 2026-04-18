@@ -1499,11 +1499,13 @@ void RF_CalcTics (void)
 #ifdef SDL_PORT
     } while (tics<1);
     //
-    // Force exactly 1 tick per frame for smooth 60fps.  Game logic runs
-    // at 60 ticks/sec (one per vsync) instead of 70.  TimeCount stays at
-    // 70Hz for sound/music timing.  Any ticks beyond the first are
-    // intentionally ignored: lasttimecount resyncs to the current
-    // TimeCount so they don't accumulate across frames.
+    // Clamp to exactly 1 tick per frame.  The SDL renderer presents at
+    // vsync (~60Hz), so this loop resumes once per display refresh.
+    // Game logic therefore runs at the display rate instead of the
+    // original 70Hz MINTICS=2 cadence.  TimeCount still ticks at 70Hz
+    // for sound/music timing.  Any accumulated ticks beyond the first
+    // are intentionally dropped: lasttimecount resyncs below so they
+    // don't carry over to the next frame.
     //
     tics = 1;
 #else
