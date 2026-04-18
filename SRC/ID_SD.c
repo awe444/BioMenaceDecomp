@@ -188,7 +188,7 @@ SD_GetSubTickFraction(void)
 {
   Uint32  now = SDL_GetTicks();
   Uint32  extra_ms = now - sdl_lastTicks;
-  Uint32  total = sdl_tickRemainder + extra_ms * 70;
+  Uint64  total = (Uint64)sdl_tickRemainder + (Uint64)extra_ms * 70;
   double  frac = (double)total / 1000.0;
 
   if (frac < 0.0) frac = 0.0;

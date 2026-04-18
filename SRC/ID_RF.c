@@ -222,8 +222,6 @@ int   hscrolledge[MAXSCROLLEDGES],vscrolledge[MAXSCROLLEDGES];
 #ifdef SDL_PORT
 static unsigned rf_smoothPrevOriginX;
 static unsigned rf_smoothPrevOriginY;
-static int      rf_smoothScrollDX;
-static int      rf_smoothScrollDY;
 static unsigned rf_smoothLastTics;
 #endif
 
@@ -355,8 +353,6 @@ void RF_FixOfs (void)
 #ifdef SDL_PORT
     rf_smoothPrevOriginX = originxglobal;
     rf_smoothPrevOriginY = originyglobal;
-    rf_smoothScrollDX = 0;
-    rf_smoothScrollDY = 0;
     rf_smoothLastTics = 1;
 #endif
   }
@@ -1632,8 +1628,6 @@ void RF_NewPosition (unsigned x, unsigned y)
 #ifdef SDL_PORT
   rf_smoothPrevOriginX = originxglobal;
   rf_smoothPrevOriginY = originyglobal;
-  rf_smoothScrollDX = 0;
-  rf_smoothScrollDY = 0;
   rf_smoothLastTics = 1;
 #endif
 }
@@ -2305,8 +2299,6 @@ void RF_Refresh (void)
     // Update state for the next frame's interpolation
     rf_smoothPrevOriginX = originxglobal;
     rf_smoothPrevOriginY = originyglobal;
-    rf_smoothScrollDX = dx;
-    rf_smoothScrollDY = dy;
     rf_smoothLastTics = tics;
   }
 #else
