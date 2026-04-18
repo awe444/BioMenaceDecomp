@@ -411,6 +411,13 @@ static void VWL_SetupSDLWindow(void)
         Quit("SDL_CreateTexture failed!");
 
     sdl_fullscreen = 0;
+
+#ifdef __ANDROID__
+    // On Android, default to fullscreen so the game fills the screen
+    // instead of appearing as a tiny 320x240 window.
+    SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    sdl_fullscreen = 1;
+#endif
 }
 
 //===========================================================================
