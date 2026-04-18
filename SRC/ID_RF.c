@@ -1691,11 +1691,7 @@ void RF_Scroll (int x, int y)
         PORTTILESWIDE*2,PORTTILESHIGH*16);
 
       if (i==screenpage)
-#ifdef SDL_PORT
-        VW_SetScreen(newscreen+oldpanadjust,oldpanx & 7);
-#else
         VW_SetScreen(newscreen+oldpanadjust,oldpanx & xpanmask);
-#endif
     }
   }
   bufferofs = screenstart[otherpage];
@@ -2246,14 +2242,7 @@ void RF_Refresh (void)
 //
 // display the changed screen
 //
-#ifdef SDL_PORT
-  // Per-pixel panning precision for SDL (no EGA 2-pixel quantization).
-  // With tics=1 at 60fps, the scroll advances the same amount every frame,
-  // so no interpolation is needed — this is inherently smooth.
-  VW_SetScreen(bufferofs+panadjust,panx & 7);
-#else
   VW_SetScreen(bufferofs+panadjust,panx & xpanmask);
-#endif
 
 //
 // prepare for next refresh
