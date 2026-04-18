@@ -216,6 +216,17 @@ eraseblocktype  eraselist[2][MAXSPRITES],*eraselistptr[2];
 int   hscrollblocks,vscrollblocks;
 int   hscrolledge[MAXSCROLLEDGES],vscrolledge[MAXSCROLLEDGES];
 
+//
+// SDL smooth-scroll interpolation state
+//
+#ifdef SDL_PORT
+static unsigned rf_smoothPrevOriginX;
+static unsigned rf_smoothPrevOriginY;
+static int      rf_smoothScrollDX;
+static int      rf_smoothScrollDY;
+static unsigned rf_smoothLastTics;
+#endif
+
 /*
 =============================================================================
 
@@ -341,6 +352,13 @@ void RF_FixOfs (void)
     bufferofs = screenstart[otherpage];
     masterofs = screenstart[2];
     VW_SetScreen (displayofs,0);
+#ifdef SDL_PORT
+    rf_smoothPrevOriginX = originxglobal;
+    rf_smoothPrevOriginY = originyglobal;
+    rf_smoothScrollDX = 0;
+    rf_smoothScrollDY = 0;
+    rf_smoothLastTics = 1;
+#endif
   }
   else
   {
@@ -1496,7 +1514,11 @@ void RF_CalcTics (void)
       IN_PumpEvents();
       newtime = TimeCount;
       tics = newtime-lasttimecount;
+#ifdef SDL_PORT
+    } while (tics<1);
+#else
     } while (tics<MINTICS);
+#endif
     lasttimecount = newtime;
 
 #ifdef PROFILE
@@ -1606,6 +1628,14 @@ void RF_NewPosition (unsigned x, unsigned y)
   }
   *(word *)(page0ptr-PORTTILESWIDE)
     = *(word *)(page1ptr-PORTTILESWIDE) = UPDATETERMINATE;
+
+#ifdef SDL_PORT
+  rf_smoothPrevOriginX = originxglobal;
+  rf_smoothPrevOriginY = originyglobal;
+  rf_smoothScrollDX = 0;
+  rf_smoothScrollDY = 0;
+  rf_smoothLastTics = 1;
+#endif
 }
 
 //===========================================================================
@@ -2230,7 +2260,58 @@ void RF_Refresh (void)
 //
 // display the changed screen
 //
+#ifdef SDL_PORT
+  {
+    //
+    // Smooth-scroll interpolation: extrapolate display position forward by
+    // the sub-tick fraction so the scroll advances evenly at 60 fps even
+    // though game logic ticks arrive at 70 Hz.
+    //
+    int dx = (int)originxglobal - (int)rf_smoothPrevOriginX;
+    int dy = (int)originyglobal - (int)rf_smoothPrevOriginY;
+    unsigned t = rf_smoothLastTics > 0 ? rf_smoothLastTics : 1;
+
+    double frac = SD_GetSubTickFraction();
+    int vel_x = dx / (int)t;
+    int vel_y = dy / (int)t;
+    int extra_x = (int)(vel_x * frac);
+    int extra_y = (int)(vel_y * frac);
+
+    // Compute extrapolated origin (may be slightly ahead of game state)
+    unsigned render_ox = (unsigned)((int)originxglobal + extra_x);
+    unsigned render_oy = (unsigned)((int)originyglobal + extra_y);
+
+    // Convert to display-relative pixel offset within the tile buffer.
+    // The buffer contains tiles starting at (originxtile, originytile).
+    // disp_panx/disp_pany give the pixel offset from the buffer's first
+    // tile to the desired display position.
+    int disp_panx = (int)((render_ox >> G_P_SHIFT) & 15)
+                  + ((int)(render_ox >> G_T_SHIFT) - (int)originxtile) * 16;
+    int disp_pany = (int)((render_oy >> G_P_SHIFT) & 15)
+                  + ((int)(render_oy >> G_T_SHIFT) - (int)originytile) * 16;
+
+    // Clamp to the safe buffer region:
+    //   horizontal: 0 .. (PORTTILESWIDE*16 - SCREEN_W) = 16
+    //   vertical:   0 .. (PORTTILESHIGH*16 - SCREEN_H) = 16
+    if (disp_panx < 0) disp_panx = 0;
+    if (disp_panx > 16) disp_panx = 16;
+    if (disp_pany < 0) disp_pany = 0;
+    if (disp_pany > 16) disp_pany = 16;
+
+    // Per-pixel precision: vertical component in panadjust, horizontal
+    // entirely via pelpan.  This removes the EGA 2-pixel granularity.
+    VW_SetScreen(bufferofs + ylookup[disp_pany], (unsigned)disp_panx);
+
+    // Update state for the next frame's interpolation
+    rf_smoothPrevOriginX = originxglobal;
+    rf_smoothPrevOriginY = originyglobal;
+    rf_smoothScrollDX = dx;
+    rf_smoothScrollDY = dy;
+    rf_smoothLastTics = tics;
+  }
+#else
   VW_SetScreen(bufferofs+panadjust,panx & xpanmask);
+#endif
 
 //
 // prepare for next refresh

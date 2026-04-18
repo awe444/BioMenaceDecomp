@@ -175,6 +175,30 @@ SD_UpdateTimeCount(void)
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//  SD_GetSubTickFraction() - Returns the fractional 70Hz tick progress
+//    since the last TimeCount update.  Used by the smooth-scroll code to
+//    interpolate display positions between game-logic ticks at 60 fps.
+//    Result is in the range [0.0, ~1.5]; values above 1.0 mean the next
+//    tick is overdue.
+//
+///////////////////////////////////////////////////////////////////////////
+#ifdef SDL_PORT
+double
+SD_GetSubTickFraction(void)
+{
+  Uint32  now = SDL_GetTicks();
+  Uint32  extra_ms = now - sdl_lastTicks;
+  Uint32  total = sdl_tickRemainder + extra_ms * 70;
+  double  frac = (double)total / 1000.0;
+
+  if (frac < 0.0) frac = 0.0;
+  if (frac > 1.5) frac = 1.5;
+  return frac;
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////
+//
 //  SDL_SetTimerSpeed() - No-op in SDL2 stub (no hardware timer to program)
 //
 ///////////////////////////////////////////////////////////////////////////

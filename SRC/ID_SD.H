@@ -211,6 +211,10 @@ extern  boolean SD_MusicPlaying(void),
         SD_SetMusicMode(SMMode mode);
 extern  word  SD_SoundPlaying(void);
 
+#ifdef SDL_PORT
+extern  double  SD_GetSubTickFraction(void);
+#endif
+
 #ifdef  _MUSE_  // MUSE Goes directly to the lower level routines
 extern  void  SDL_PCPlaySound(PCSound far *sound),
         SDL_PCStopSound(void),
