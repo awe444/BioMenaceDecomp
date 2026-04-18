@@ -415,8 +415,8 @@ static void VWL_SetupSDLWindow(void)
 #ifdef __ANDROID__
     // On Android, default to fullscreen so the game fills the screen
     // instead of appearing as a tiny 320x240 window.
-    SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    sdl_fullscreen = 1;
+    if (SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP) == 0)
+        sdl_fullscreen = 1;
 #endif
 }
 
