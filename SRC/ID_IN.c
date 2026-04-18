@@ -82,6 +82,18 @@ static  ScanCode  CurCode,LastCode;
 
 static  SDL_Joystick *sdl_joysticks[MaxJoys];
 
+// SDL Game Controller (XInput gamepad) support
+static  SDL_GameController *sdl_gamecontroller;
+
+// Threshold for treating an axis as "pressed" (about 50% of full deflection)
+#define GAMEPAD_AXIS_THRESHOLD 16384
+
+// Track axis-as-button state so we can generate press/release events
+static  boolean gamepad_axis_left;
+static  boolean gamepad_axis_right;
+static  boolean gamepad_axis_up;
+static  boolean gamepad_axis_down;
+
 static  byte        far ASCIINames[] =    // Unshifted ASCII for scan codes
           {
 //   0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
@@ -259,6 +271,86 @@ INL_SDLScanCodeToDOS(SDL_Scancode sc)
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//  INL_GameControllerButtonToScanCode() - Translates an SDL game controller
+//    button to the corresponding DOS scan code for the keyboard mapping:
+//      D-pad     -> Arrow keys
+//      A button  -> ALT
+//      B button  -> CTRL
+//      X button  -> ENTER
+//      Y button  -> Y key
+//      Start     -> Space
+//      Back/Select -> ESC
+//
+///////////////////////////////////////////////////////////////////////////
+static byte
+INL_GameControllerButtonToScanCode(SDL_GameControllerButton btn)
+{
+  switch (btn)
+  {
+  case SDL_CONTROLLER_BUTTON_A:             return sc_Alt;        // 0x38
+  case SDL_CONTROLLER_BUTTON_B:             return sc_Control;    // 0x1d
+  case SDL_CONTROLLER_BUTTON_X:             return sc_Enter;      // 0x1c
+  case SDL_CONTROLLER_BUTTON_Y:             return sc_Y;          // 0x15
+  case SDL_CONTROLLER_BUTTON_BACK:          return sc_Escape;     // 0x01
+  case SDL_CONTROLLER_BUTTON_START:         return sc_Space;      // 0x39
+  case SDL_CONTROLLER_BUTTON_DPAD_UP:       return sc_UpArrow;    // 0x48
+  case SDL_CONTROLLER_BUTTON_DPAD_DOWN:     return sc_DownArrow;  // 0x50
+  case SDL_CONTROLLER_BUTTON_DPAD_LEFT:     return sc_LeftArrow;  // 0x4b
+  case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:    return sc_RightArrow; // 0x4d
+  default:                                  return 0;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+//  INL_GameControllerSetKey() - Simulates a key press or release from a
+//    gamepad button, updating the Keyboard[] array, LastScan, and
+//    triggering the key hook just like a real keyboard event.
+//
+///////////////////////////////////////////////////////////////////////////
+static void
+INL_GameControllerSetKey(byte scancode, boolean pressed)
+{
+  int player;
+
+  if (scancode == 0 || scancode >= NumCodes)
+    return;
+
+  Keyboard[scancode] = pressed;
+
+  if (pressed)
+  {
+    LastCode = CurCode;
+    CurCode = LastScan = scancode;
+
+    if (Latch)
+    {
+      for (player = 0; player < MaxPlayers; player++)
+      {
+        if (Controls[player] == ctrl_Keyboard1)
+        {
+          if (scancode == KbdDefs[0].button0)
+            LatchedButton0[player] = true;
+          else if (scancode == KbdDefs[0].button1)
+            LatchedButton1[player] = true;
+        }
+        else if (Controls[player] == ctrl_Keyboard2)
+        {
+          if (scancode == KbdDefs[1].button0)
+            LatchedButton0[player] = true;
+          else if (scancode == KbdDefs[1].button1)
+            LatchedButton1[player] = true;
+        }
+      }
+    }
+  }
+
+  if (INL_KeyHook)
+    INL_KeyHook();
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
 //  IN_PumpEvents() - Polls SDL events and updates keyboard/mouse state.
 //    Call this every frame instead of relying on a keyboard ISR.
 //
@@ -362,6 +454,71 @@ IN_PumpEvents(void)
 
       if (INL_KeyHook)
         INL_KeyHook();
+      break;
+
+    // ---- Game Controller (XInput gamepad) events ----
+
+    case SDL_CONTROLLERDEVICEADDED:
+      if (!sdl_gamecontroller)
+      {
+        sdl_gamecontroller = SDL_GameControllerOpen(ev.cdevice.which);
+      }
+      break;
+
+    case SDL_CONTROLLERDEVICEREMOVED:
+      if (sdl_gamecontroller &&
+          ev.cdevice.which == SDL_JoystickInstanceID(
+            SDL_GameControllerGetJoystick(sdl_gamecontroller)))
+      {
+        SDL_GameControllerClose(sdl_gamecontroller);
+        sdl_gamecontroller = nil;
+      }
+      break;
+
+    case SDL_CONTROLLERBUTTONDOWN:
+      k = INL_GameControllerButtonToScanCode(ev.cbutton.button);
+      INL_GameControllerSetKey(k, true);
+      break;
+
+    case SDL_CONTROLLERBUTTONUP:
+      k = INL_GameControllerButtonToScanCode(ev.cbutton.button);
+      INL_GameControllerSetKey(k, false);
+      break;
+
+    case SDL_CONTROLLERAXISMOTION:
+      // Left stick mapped to arrow keys with a dead zone threshold
+      if (ev.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
+      {
+        boolean now_left  = (ev.caxis.value < -GAMEPAD_AXIS_THRESHOLD);
+        boolean now_right = (ev.caxis.value >  GAMEPAD_AXIS_THRESHOLD);
+
+        if (now_left != gamepad_axis_left)
+        {
+          INL_GameControllerSetKey(sc_LeftArrow, now_left);
+          gamepad_axis_left = now_left;
+        }
+        if (now_right != gamepad_axis_right)
+        {
+          INL_GameControllerSetKey(sc_RightArrow, now_right);
+          gamepad_axis_right = now_right;
+        }
+      }
+      else if (ev.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
+      {
+        boolean now_up   = (ev.caxis.value < -GAMEPAD_AXIS_THRESHOLD);
+        boolean now_down = (ev.caxis.value >  GAMEPAD_AXIS_THRESHOLD);
+
+        if (now_up != gamepad_axis_up)
+        {
+          INL_GameControllerSetKey(sc_UpArrow, now_up);
+          gamepad_axis_up = now_up;
+        }
+        if (now_down != gamepad_axis_down)
+        {
+          INL_GameControllerSetKey(sc_DownArrow, now_down);
+          gamepad_axis_down = now_down;
+        }
+      }
       break;
     }
   }
@@ -793,6 +950,23 @@ IN_Startup(void)
   if (checkjoys)
     SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
+  // Initialize SDL Game Controller subsystem for XInput gamepad support
+  if (checkjoys)
+  {
+    SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
+
+    // Open the first available game controller
+    for (i = 0; i < (word)SDL_NumJoysticks(); i++)
+    {
+      if (SDL_IsGameController(i))
+      {
+        sdl_gamecontroller = SDL_GameControllerOpen(i);
+        if (sdl_gamecontroller)
+          break;
+      }
+    }
+  }
+
   for (i = 0;i < MaxJoys;i++)
     JoysPresent[i] = checkjoys? INL_StartJoy(i) : false;
 
@@ -834,6 +1008,13 @@ IN_Shutdown(void)
   INL_ShutMouse();
   for (i = 0;i < MaxJoys;i++)
     INL_ShutJoy(i);
+
+  if (sdl_gamecontroller)
+  {
+    SDL_GameControllerClose(sdl_gamecontroller);
+    sdl_gamecontroller = nil;
+  }
+
   INL_ShutKbd();
 
   IN_Started = false;

@@ -30,6 +30,18 @@
 /* BIOS.H and CONIO.H are DOS-only. ID_COMPAT.H provides the needed stubs. */
 
 /*
+ * BM_LOG() — portable diagnostic logging.
+ * On SDL builds, routes through SDL_Log which goes to stderr on desktop
+ * and logcat on Android.  On DOS builds, falls back to fprintf(stderr).
+ */
+#ifdef SDL_PORT
+#include <SDL.h>
+#define BM_LOG SDL_Log
+#else
+#define BM_LOG(...) fprintf(stderr, __VA_ARGS__)
+#endif
+
+/*
 =============================================================================
 
              GLOBAL CONSTANTS & MACROS

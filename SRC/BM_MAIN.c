@@ -35,6 +35,28 @@
 
 #include "BM_DEF.H"
 
+#if SDL_PORT && defined(__ANDROID__)
+#include <setjmp.h>
+/*
+ * On Android, SDL2 runs main() (== SDL_main) in a dedicated native thread.
+ * Calling exit() from *any* thread kills the entire process, including
+ * Android system threads (RenderThread, VsyncReceiver, Binder, …) that may
+ * be mid-operation — resulting in a SIGSEGV or destroyed-mutex SIGABRT.
+ *
+ * The only safe way to terminate is to **return from main()**.  Because
+ * Quit() is called from deep call chains and is not expected to return,
+ * we use setjmp/longjmp to unwind back into main()'s frame, let it call
+ * SDL_Quit(), and then return normally.  SDL's Java side then calls
+ * Activity.finish() through the standard lifecycle.
+ *
+ * These variables are only accessed from the SDL_main thread (the native
+ * thread that runs main/Quit), so no synchronization is needed.
+ */
+static jmp_buf android_quit_jmpbuf;
+static int     android_quit_code;
+static int     android_quit_jmpbuf_valid;
+#endif
+
 /*
 =============================================================================
 
@@ -159,24 +181,24 @@ void InitGame(void)
   US_TextScreen();
   _setcursortype(_NOCURSOR);
 
-  fprintf(stderr, "[DIAG] InitGame: MM_Startup\n");
+  BM_LOG("[DIAG] InitGame: MM_Startup");
   MM_Startup();
-  fprintf(stderr, "[DIAG] InitGame: VW_Startup\n");
+  BM_LOG("[DIAG] InitGame: VW_Startup");
   VW_Startup();
-  fprintf(stderr, "[DIAG] InitGame: RF_Startup\n");
+  BM_LOG("[DIAG] InitGame: RF_Startup");
   RF_Startup();
-  fprintf(stderr, "[DIAG] InitGame: IN_Startup\n");
+  BM_LOG("[DIAG] InitGame: IN_Startup");
   IN_Startup();
-  fprintf(stderr, "[DIAG] InitGame: SD_Startup\n");
+  BM_LOG("[DIAG] InitGame: SD_Startup");
   SD_Startup();
-  fprintf(stderr, "[DIAG] InitGame: US_Startup\n");
+  BM_LOG("[DIAG] InitGame: US_Startup");
   US_Startup();
 
   US_UpdateTextScreen();
 
-  fprintf(stderr, "[DIAG] InitGame: CA_Startup\n");
+  BM_LOG("[DIAG] InitGame: CA_Startup");
   CA_Startup();
-  fprintf(stderr, "[DIAG] InitGame: US_Setup\n");
+  BM_LOG("[DIAG] InitGame: US_Setup");
   US_Setup();
 
   US_SetLoadSaveHooks(&LoadTheGame, &SaveTheGame, &ResetGame);
@@ -230,6 +252,11 @@ void Quit(char *error)
 {
   Uint16 finscreen;
 
+  if (error && *error)
+    BM_LOG("Quit: %s", error);
+  else
+    BM_LOG("Quit: (normal exit)");
+
   if (!error)
   {
     CA_SetAllPurge();
@@ -253,6 +280,14 @@ void Quit(char *error)
       getch();
       execlp("TED5.EXE", "TED5.EXE", "/LAUNCH", NULL);
     }
+#if SDL_PORT && defined(__ANDROID__)
+    if (android_quit_jmpbuf_valid)
+    {
+      android_quit_code = 1;
+      longjmp(android_quit_jmpbuf, 1);
+    }
+    SDL_Quit();
+#endif
     exit(1);
   }
 
@@ -265,6 +300,14 @@ void Quit(char *error)
     gotoxy(1, 24);
   }
 
+#if SDL_PORT && defined(__ANDROID__)
+  if (android_quit_jmpbuf_valid)
+  {
+    android_quit_code = 0;
+    longjmp(android_quit_jmpbuf, 1);
+  }
+  SDL_Quit();
+#endif
   exit(0);
 }
 
@@ -307,7 +350,7 @@ void CheckMemory(void)
   ShutdownId();
 
 #ifdef SDL_PORT
-  fprintf(stderr, "Not enough memory to run Bio Menace!\n");
+  BM_LOG("Not enough memory to run Bio Menace!");
 #else
   movedata(finscreen,7,0xb800,0,3780);
   textmode(C80);
@@ -366,7 +409,7 @@ void DemoLoop(void)
   playstate = ex_stillplaying;
   while (1)
   {
-    fprintf(stderr, "[DIAG] DemoLoop state=%d\n", state);
+    BM_LOG("[DIAG] DemoLoop state=%d", state);
     switch (state++)
     {
     case 0:
@@ -473,22 +516,19 @@ static void CheckCutFile(void)
     close(handle);
     return;
   }
-  puts("Combining "FILE_GR1" and "FILE_GR2" into "FILE_GRAPH"...");
+  BM_LOG("Combining "FILE_GR1" and "FILE_GR2" into "FILE_GRAPH"...");
   if (rename(FILE_GR1, FILE_GRAPH) == -1)
   {
-    puts("Can't rename "FILE_GR1"!");
-    exit(1);
+    Quit("Can't rename "FILE_GR1"!");
   }
   if ( (ohandle = open(FILE_GRAPH, O_BINARY|O_APPEND|O_WRONLY)) == -1)
   {
-    puts("Can't open "FILE_GRAPH"!");
-    exit(1);
+    Quit("Can't open "FILE_GRAPH"!");
   }
   lseek(ohandle, 0, SEEK_END);
   if ( (ihandle = open(FILE_GR2, O_BINARY|O_RDONLY)) == -1)
   {
-    puts("Can't find "FILE_GR2"!");
-    exit(1);
+    Quit("Can't find "FILE_GR2"!");
   }
   size = filelength(ihandle);
   buffer = farmalloc(32000);
@@ -601,25 +641,50 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
 
+#if SDL_PORT && defined(__ANDROID__)
+  /* On Android the game data files live in the app's internal storage
+     directory.  SDL2 copies APK assets there (or the user pushes them
+     via adb).  We must chdir so the relative open() calls find them. */
+  {
+    const char *path = SDL_AndroidGetInternalStoragePath();
+    if (path)
+      chdir(path);
+  }
+
+  /* Register a return point for Quit().  On Android we must never call
+     exit() because it kills system threads (RenderThread, etc.) that are
+     still running.  Quit() does a longjmp back here instead, and we
+     return normally so SDL's Java side can finish the Activity. */
+  if (setjmp(android_quit_jmpbuf) != 0)
+  {
+    SDL_Quit();
+    return android_quit_code;
+  }
+  android_quit_jmpbuf_valid = 1;
+#endif
+
 #ifndef SHAREWARE
   copyprotectionfailed = CheckCopyProtection();
 #endif
 
+  // CheckCutFile() combines split game data files (EGA1.BM1 + EGA2.BM1
+  // into EGAGRAPH.BM1).  Error paths now use Quit() instead of exit(1),
+  // which is safe on all platforms including Android.
   CheckCutFile();
 
   storedemo = false;
 
-  fprintf(stderr, "[DIAG] InitGame starting...\n");
+  BM_LOG("[DIAG] InitGame starting...");
   InitGame();
-  fprintf(stderr, "[DIAG] InitGame done, checking memory...\n");
+  BM_LOG("[DIAG] InitGame done, checking memory...");
   CheckMemory();
-  fprintf(stderr, "[DIAG] CheckMemory passed\n");
+  BM_LOG("[DIAG] CheckMemory passed");
 
   gamestate.var44 = 0;
 
   _setcursortype(_NORMALCURSOR);
 
-  fprintf(stderr, "[DIAG] Entering DemoLoop\n");
+  BM_LOG("[DIAG] Entering DemoLoop");
   DemoLoop();
   Quit("Demo loop exited???");
 }

@@ -83,7 +83,7 @@ void CheckLastScan(void)
 
 void ShowTitle(Uint16 timeout)
 {
-  fprintf(stderr, "[DIAG] ShowTitle(%u) starting\n", timeout);
+  BM_LOG("[DIAG] ShowTitle(%u) starting", timeout);
   VW_FadeOut();
   RF_FixOfs();
 
@@ -119,7 +119,7 @@ void ShowTitle(Uint16 timeout)
 
 void ShowScreen(Sint16 num)
 {
-  fprintf(stderr, "[DIAG] ShowScreen(%d) starting\n", num);
+  BM_LOG("[DIAG] ShowScreen(%d) starting", num);
   VW_FadeOut();
   RF_FixOfs();
 
@@ -180,7 +180,7 @@ void RunDemo(Sint16 num)
   Uint16 far *demodata;
   gametype statecopy;
 
-  fprintf(stderr, "[DIAG] RunDemo(%d) starting\n", num);
+  BM_LOG("[DIAG] RunDemo(%d) starting", num);
   basenum = num;
 
   if (basenum != 4)
@@ -202,15 +202,15 @@ void RunDemo(Sint16 num)
   _fmemcpy(DemoBuffer, ((char _seg *)grsegs[num])+4, DemoSize);
   MM_FreePtr(&grsegs[num]);
   IN_StartDemoPlayback(DemoBuffer, DemoSize);
-  fprintf(stderr, "[DIAG] RunDemo: SetupGameLevel for map %d\n", gamestate.mapon);
+  BM_LOG("[DIAG] RunDemo: SetupGameLevel for map %d", gamestate.mapon);
   SetupGameLevel(true);
   if (scorescreenkludge)
   {
     DrawHighScores();
   }
-  fprintf(stderr, "[DIAG] RunDemo: entering PlayLoop\n");
+  BM_LOG("[DIAG] RunDemo: entering PlayLoop");
   PlayLoop();
-  fprintf(stderr, "[DIAG] RunDemo: PlayLoop done\n");
+  BM_LOG("[DIAG] RunDemo: PlayLoop done");
   IN_StopDemo();
   { memptr _tmp = (memptr)DemoBuffer; MM_FreePtr(&_tmp); DemoBuffer = _tmp; }
   VW_FixRefreshBuffer();

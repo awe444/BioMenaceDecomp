@@ -5,3 +5,12 @@
 !SRC/LZEXE/LZEXE.EXE
 build/
 build-debug/
+
+# Android
+android/.gradle/
+android/app/build/
+android/app/jni/SDL2/
+android/app/jni/SDL2-*.tar.gz
+android/local.properties
+*.apk
+*.aab

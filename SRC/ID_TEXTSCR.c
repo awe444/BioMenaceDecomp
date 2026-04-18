@@ -378,6 +378,12 @@ void TXT_Init(void)
     }
 
     txt_initialized = 1;
+
+#ifdef __ANDROID__
+    // On Android, make the text screen fullscreen too so the hardware
+    // setup screen fills the display instead of appearing tiny.
+    SDL_SetWindowFullscreen(txt_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+#endif
 }
 
 void TXT_Update(void)
