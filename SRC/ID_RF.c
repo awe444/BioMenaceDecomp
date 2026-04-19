@@ -1193,7 +1193,8 @@ void RF_MapToMap (unsigned srcx, unsigned srcy,
           unsigned width, unsigned height)
 {
   int     x,y;
-  unsigned  source,destofs,xspot,yspot;
+  unsigned  source,xspot,yspot;
+  int       destofs;
   unsigned  linedelta,p0,p1,p2,updatespot;
   uint16_t  far *source0, far *source1, far *source2;
   uint16_t  far *dest0, far *dest1, far *dest2;
