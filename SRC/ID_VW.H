@@ -291,6 +291,12 @@ void VW_MaskBlock(memptr segm,unsigned ofs,unsigned dest,
   unsigned wide,unsigned height,unsigned planesize);
 void VW_InverseMask(memptr segm,unsigned ofs,unsigned dest,
   unsigned wide,unsigned height);
+#ifdef SDL_PORT
+void VW_MaskBlock_PixShift(memptr segm,unsigned ofs,unsigned dest,
+  unsigned wide,unsigned height,unsigned planesize,unsigned pixshift);
+void VW_InverseMask_PixShift(memptr segm,unsigned ofs,unsigned dest,
+  unsigned wide,unsigned height,unsigned pixshift);
+#endif
 void VW_MemToScreen(memptr source,unsigned dest,unsigned width,unsigned height);
 void VW_ScreenToMem(unsigned source,memptr dest,unsigned width,unsigned height);
 void VW_ScreenToScreen(unsigned source,unsigned dest,unsigned width,unsigned height);
