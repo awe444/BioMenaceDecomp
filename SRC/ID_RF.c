@@ -102,6 +102,10 @@ typedef struct spriteliststruct
   unsigned  tilex,tiley,tilewide,tilehigh;
   int     priority,updatecount;
   struct spriteliststruct **prevptr,*nextsprite;
+#ifdef SDL_PORT
+  unsigned  pixelshift;   // exact sub-byte pixel offset (0-7) for per-pixel rendering
+  unsigned  srcwidth;     // unshifted source data width (before pixel shift widens it)
+#endif
 } spritelisttype;
 
 
@@ -1496,7 +1500,21 @@ void RF_CalcTics (void)
       IN_PumpEvents();
       newtime = TimeCount;
       tics = newtime-lasttimecount;
+#ifdef SDL_PORT
+    } while (tics<1);
+    //
+    // Clamp to exactly 1 tick per frame.  The SDL renderer presents at
+    // vsync (~60Hz), so this loop resumes once per display refresh.
+    // Game logic therefore runs at the display rate instead of the
+    // original 70Hz MINTICS=2 cadence.  TimeCount still ticks at 70Hz
+    // for sound/music timing.  Any accumulated ticks beyond the first
+    // are intentionally dropped: lasttimecount resyncs below so they
+    // don't carry over to the next frame.
+    //
+    tics = 1;
+#else
     } while (tics<MINTICS);
+#endif
     lasttimecount = newtime;
 
 #ifdef PROFILE
@@ -1679,7 +1697,11 @@ void RF_Scroll (int x, int y)
         PORTTILESWIDE*2,PORTTILESHIGH*16);
 
       if (i==screenpage)
+#ifdef SDL_PORT
+        VW_SetScreen(newscreen+oldpanadjust,oldpanx & 7);
+#else
         VW_SetScreen(newscreen+oldpanadjust,oldpanx & xpanmask);
+#endif
     }
   }
   bufferofs = screenstart[otherpage];
@@ -1776,7 +1798,10 @@ void RF_PlaceSprite (void **user,unsigned globalx,unsigned globaly,
   spritelisttype  register *sprite,*next;
   spritetabletype far *spr;
   spritetype _seg *block;
-  unsigned  shift,pixx;
+  unsigned  pixx;
+#ifndef SDL_PORT
+  unsigned  shift;
+#endif
   char    str[80],str2[16];
 
   if (!spritenumber || spritenumber == (unsigned)-1)
@@ -1851,6 +1876,23 @@ linknewspot:
   globalx+=spr->orgx;
 
   pixx = globalx >> G_SY_SHIFT;
+#ifdef SDL_PORT
+//
+// SDL per-pixel sprite rendering: use unshifted (shift=0) source data
+// and store the exact sub-byte pixel offset for on-the-fly shifting
+// during the blit.  This eliminates the 2-pixel quantization that causes
+// HUD jitter when combined with per-pixel pel panning.
+//
+  sprite->pixelshift = pixx & 7;
+  sprite->screenx = pixx >> (G_EGASX_SHIFT-G_SY_SHIFT);
+  sprite->screeny = globaly >> G_SY_SHIFT;
+  sprite->srcwidth = block->width[0];
+  sprite->width = block->width[0] + (sprite->pixelshift > 0 ? 1 : 0);
+  sprite->height = spr->height;
+  sprite->grseg = spritenumber;
+  sprite->sourceofs = block->sourceoffset[0];
+  sprite->planesize = block->planesize[0];
+#else
   shift = (pixx&7)/2;
 
   sprite->screenx = pixx >> (G_EGASX_SHIFT-G_SY_SHIFT);
@@ -1860,6 +1902,7 @@ linknewspot:
   sprite->grseg = spritenumber;
   sprite->sourceofs = block->sourceoffset[shift];
   sprite->planesize = block->planesize[shift];
+#endif
   sprite->draw = draw;
   sprite->priority = priority;
   sprite->tilex = sprite->screenx >> SX_T_SHIFT;
@@ -2141,7 +2184,11 @@ redraw:
       if (porty<0)
       {
         height += porty;          // clip top off
+#ifdef SDL_PORT
+        sourceofs -= porty*sprite->srcwidth;
+#else
         sourceofs -= porty*sprite->width;
+#endif
         porty = 0;
       }
       else if (porty+height>PORTSCREENHIGH)
@@ -2153,6 +2200,17 @@ redraw:
 
       switch (sprite->draw)
       {
+#ifdef SDL_PORT
+      case spritedraw:
+        VW_MaskBlock_PixShift(grsegs[sprite->grseg], sourceofs,
+          dest,sprite->srcwidth,height,sprite->planesize,sprite->pixelshift);
+        break;
+
+      case maskdraw:
+        VW_InverseMask_PixShift(grsegs[sprite->grseg], sourceofs,
+          dest,sprite->srcwidth,height,sprite->pixelshift);
+        break;
+#else
       case spritedraw:
         VW_MaskBlock(grsegs[sprite->grseg], sourceofs,
           dest,sprite->width,height,sprite->planesize);
@@ -2162,8 +2220,10 @@ redraw:
         VW_InverseMask(grsegs[sprite->grseg], sourceofs,
           dest,sprite->width,height);
         break;
+#endif
 
       }
+
 #ifdef PROFILE
       updatecount++;
 #endif
@@ -2230,7 +2290,11 @@ void RF_Refresh (void)
 //
 // display the changed screen
 //
+#ifdef SDL_PORT
+  VW_SetScreen(bufferofs+panadjust,panx & 7);
+#else
   VW_SetScreen(bufferofs+panadjust,panx & xpanmask);
+#endif
 
 //
 // prepare for next refresh

@@ -1045,6 +1045,159 @@ void VW_InverseMask(memptr segm, unsigned ofs, unsigned dest,
 
 //===========================================================================
 
+#ifdef SDL_PORT
+/*
+====================
+=
+= VW_MaskBlock_PixShift - Per-pixel shifted masked block draw
+=
+= Draws sprite data shifted right by 'pixshift' pixels (0-7).
+= Uses unshifted (shift=0) source data and applies the bit shift on the fly.
+= This eliminates EGA's 2-pixel sprite quantization, allowing sprites to be
+= placed at any pixel position.  Combined with per-pixel pel panning
+= (panx & 7), this prevents HUD jitter during smooth scrolling.
+=
+= In EGA's planar format, bit 7 is leftmost and bit 0 is rightmost within
+= each byte.  A rightward pixel shift moves bits toward lower positions.
+=
+====================
+*/
+
+void VW_MaskBlock_PixShift(memptr segm, unsigned ofs, unsigned dest,
+    unsigned wide, unsigned height, unsigned planesize, unsigned pixshift)
+{
+    uint8_t *source = (uint8_t *)segm;
+    uint8_t *mask = source + ofs;
+    uint8_t *data = mask + planesize;
+    int plane;
+    unsigned row, col;
+
+    if (wide == 0 || height == 0)
+        return;
+
+    if (pixshift == 0)
+    {
+        VW_MaskBlock(segm, ofs, dest, wide, height, planesize);
+        return;
+    }
+
+    for (plane = 0; plane < 4; plane++)
+    {
+        uint8_t *mp = mask;
+        uint8_t *dp = data;
+        unsigned screenofs = dest;
+
+        for (row = 0; row < height; row++)
+        {
+            uint8_t prev_m = 0xFF;  // transparent fill
+            uint8_t prev_d = 0x00;  // zero fill
+
+            for (col = 0; col < wide; col++)
+            {
+                uint8_t cur_m = mp[col];
+                uint8_t cur_d = dp[col];
+
+                // Shift sprite data right by pixshift pixels.
+                // Upper pixshift bits come from previous byte, lower
+                // (8-pixshift) bits come from current source byte.
+                uint8_t shifted_m = (cur_m >> pixshift)
+                                  | (prev_m << (8 - pixshift));
+                uint8_t shifted_d = (cur_d >> pixshift)
+                                  | (prev_d << (8 - pixshift));
+
+                unsigned wofs = VRAM_WRAP(screenofs + col);
+                screenbuffer[plane][wofs] =
+                    (screenbuffer[plane][wofs] & shifted_m) | shifted_d;
+
+                prev_m = cur_m;
+                prev_d = cur_d;
+            }
+
+            // Trailing byte: remaining bits from the last source byte
+            // spill into the next destination byte.  The lower (8-pixshift)
+            // bits have no source data, so set them to 1 in the mask
+            // (transparent) to preserve the destination.
+            {
+                uint8_t trail_mask = (1 << (8 - pixshift)) - 1; // transparent fill for lower bits
+                uint8_t shifted_m = (prev_m << (8 - pixshift))
+                                  | trail_mask;
+                uint8_t shifted_d = (prev_d << (8 - pixshift));
+
+                unsigned wofs = VRAM_WRAP(screenofs + wide);
+                screenbuffer[plane][wofs] =
+                    (screenbuffer[plane][wofs] & shifted_m) | shifted_d;
+            }
+
+            mp += wide;
+            dp += wide;
+            screenofs += linewidth;
+        }
+
+        data += planesize;
+    }
+}
+
+
+/*
+====================
+=
+= VW_InverseMask_PixShift - Per-pixel shifted inverse mask draw
+=
+= Same per-pixel shift approach as VW_MaskBlock_PixShift but for the
+= inverse-mask draw type (used by some special sprites).
+=
+====================
+*/
+
+void VW_InverseMask_PixShift(memptr segm, unsigned ofs, unsigned dest,
+    unsigned wide, unsigned height, unsigned pixshift)
+{
+    uint8_t *source = (uint8_t *)segm + ofs;
+    unsigned row, col;
+    int plane;
+
+    if (pixshift == 0)
+    {
+        VW_InverseMask(segm, ofs, dest, wide, height);
+        return;
+    }
+
+    for (row = 0; row < height; row++)
+    {
+        uint8_t prev_val = 0x00;  // zero fill
+
+        for (col = 0; col < wide; col++)
+        {
+            uint8_t raw = ~(*source);
+            source++;
+
+            uint8_t shifted = (raw >> pixshift)
+                            | (prev_val << (8 - pixshift));
+
+            unsigned pos = VRAM_WRAP(dest + col);
+            for (plane = 0; plane < 4; plane++)
+                screenbuffer[plane][pos] |= shifted;
+
+            prev_val = raw;
+        }
+
+        // Trailing byte
+        {
+            uint8_t shifted = (prev_val << (8 - pixshift));
+
+            unsigned pos = VRAM_WRAP(dest + wide);
+            for (plane = 0; plane < 4; plane++)
+                screenbuffer[plane][pos] |= shifted;
+        }
+
+        dest += linewidth;
+    }
+}
+#endif /* SDL_PORT */
+
+
+//===========================================================================
+
 /*
 ====================
 =
