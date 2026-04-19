@@ -1114,10 +1114,13 @@ void VW_MaskBlock_PixShift(memptr segm, unsigned ofs, unsigned dest,
             }
 
             // Trailing byte: remaining bits from the last source byte
-            // spill into the next destination byte.
+            // spill into the next destination byte.  The lower (8-pixshift)
+            // bits have no source data, so set them to 1 in the mask
+            // (transparent) to preserve the destination.
             {
+                uint8_t trail_mask = (1 << (8 - pixshift)) - 1; // transparent fill for lower bits
                 uint8_t shifted_m = (prev_m << (8 - pixshift))
-                                  | ((1 << (8 - pixshift)) - 1);
+                                  | trail_mask;
                 uint8_t shifted_d = (prev_d << (8 - pixshift));
 
                 unsigned wofs = VRAM_WRAP(screenofs + wide);
