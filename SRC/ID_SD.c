@@ -101,6 +101,7 @@ static  Uint32      sdl_tickRemainder;
 #define SD_SAMPLE_RATE    49716   // Native OPL sample rate
 #define SD_SFX_RATE       140     // Sound effect / PC speaker service rate (Hz)
 #define SD_MUSIC_RATE     700     // AdLib music sequencer rate (Hz); = TickBase*10 per Wolf3D ID_SD
+#define SD_SFX_TICKS_PER_MUSIC_TICK (SD_MUSIC_RATE / SD_SFX_RATE) // SFX fires every Nth music tick
 #define PC_PIT_RATE       1193182 // PC PIT base clock
 
 static  SDL_AudioDeviceID sdl_audioDevice;
@@ -108,7 +109,7 @@ static  boolean     sdl_audioStarted;
 static  int       sdl_samplesPerMusicTick; // Samples between 700Hz music ticks (AdLib music on)
 static  int       sdl_samplesPerSfxTick;   // Samples between 140Hz ticks (music off or SFX only)
 static  int       sdl_sampleCounter;       // Counts down to next service tick
-static  int       sdl_sfxTickCounter;      // When music on: run SFX every 5 music ticks (700/5=140Hz)
+static  int       sdl_sfxTickCounter;      // When music on: run SFX every SD_SFX_TICKS_PER_MUSIC_TICK music ticks
 
 // PC Speaker emulation state
 static  boolean     sdl_pcSpkActive;
@@ -581,10 +582,10 @@ SD_SDL_AudioCB(void *userdata, Uint8 *stream, int len)
         // Music sequencer (alTimeCount); must match original ~700Hz rate
         SDL_ALService();
 
-        // Sound effects at 140Hz: every 5 music ticks (see Wolf3D SDL_t0Service)
+        // Sound effects at 140Hz: every SD_SFX_TICKS_PER_MUSIC_TICK music ticks (see Wolf3D SDL_t0Service)
         if (--sdl_sfxTickCounter <= 0)
         {
-          sdl_sfxTickCounter = 5;
+          sdl_sfxTickCounter = SD_SFX_TICKS_PER_MUSIC_TICK;
           switch (SoundMode)
           {
           case sdm_PC:
@@ -682,8 +683,8 @@ SDL_StartAudio(void)
   }
 
   sdl_samplesPerMusicTick = obtained.freq / SD_MUSIC_RATE;
-  sdl_samplesPerSfxTick = obtained.freq / SD_SFX_RATE;
-  sdl_sfxTickCounter = 5;
+  sdl_samplesPerSfxTick = sdl_samplesPerMusicTick * SD_SFX_TICKS_PER_MUSIC_TICK;
+  sdl_sfxTickCounter = SD_SFX_TICKS_PER_MUSIC_TICK;
   sdl_sampleCounter = sdl_samplesPerSfxTick;
 
   // Unpause the audio device to start playback
@@ -859,21 +860,26 @@ SD_SetMusicMode(SMMode mode)
   }
 
   if (result)
-    MusicMode = mode;
-
-  if (sdl_audioStarted)
   {
-    SD_LockAudio();
-    if (MusicMode == smm_AdLib)
+    if (sdl_audioStarted)
     {
-      sdl_sampleCounter = sdl_samplesPerMusicTick;
-      sdl_sfxTickCounter = 5;
+      SD_LockAudio();
+      MusicMode = mode;
+      if (MusicMode == smm_AdLib)
+      {
+        sdl_sampleCounter = sdl_samplesPerMusicTick;
+        sdl_sfxTickCounter = SD_SFX_TICKS_PER_MUSIC_TICK;
+      }
+      else
+      {
+        sdl_sampleCounter = sdl_samplesPerSfxTick;
+      }
+      SD_UnlockAudio();
     }
     else
     {
-      sdl_sampleCounter = sdl_samplesPerSfxTick;
+      MusicMode = mode;
     }
-    SD_UnlockAudio();
   }
 
   SDL_SetTimerSpeed();
